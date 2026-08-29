@@ -164,39 +164,60 @@ function Admin() {
   };
 
   if (!authed) {
+    const signIn = () => {
+      if (checkAdminCredentials(email, pass)) {
+        setAdmin(true);
+        setAuthed(true);
+        setErr(null);
+        setPass("");
+      } else {
+        setErr("Wrong email or password.");
+      }
+    };
+
     return (
       <div className="mx-auto max-w-md px-4 py-20">
-        <div className="surface p-8">
-          <h1 className="font-display text-2xl font-bold text-navy">Admin desk</h1>
+        <form
+          className="surface p-8"
+          onSubmit={(e) => {
+            e.preventDefault();
+            signIn();
+          }}
+        >
+          <h1 className="font-display text-2xl font-bold text-navy">Admin sign in</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Enter the TABITO staff passcode to manage the guide.
+            Sign in with your TABITO staff account to manage categories and publish points.
           </p>
+          <label className="mt-5 block text-xs font-bold uppercase tracking-widest text-navy">
+            Email
+          </label>
+          <input
+            type="email"
+            autoComplete="username"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            className="mt-1 w-full rounded-lg border border-input bg-background px-4 py-2.5"
+          />
+          <label className="mt-4 block text-xs font-bold uppercase tracking-widest text-navy">
+            Password
+          </label>
           <input
             type="password"
+            autoComplete="current-password"
             value={pass}
             onChange={(e) => setPass(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && pass === ADMIN_PASSCODE) {
-                setAdmin(true);
-                setAuthed(true);
-              }
-            }}
-            placeholder="Passcode"
-            className="mt-5 w-full rounded-lg border border-input bg-background px-4 py-2.5"
+            placeholder="••••••••"
+            className="mt-1 w-full rounded-lg border border-input bg-background px-4 py-2.5"
           />
           <button
-            onClick={() => {
-              if (pass === ADMIN_PASSCODE) {
-                setAdmin(true);
-                setAuthed(true);
-              } else setErr("Wrong passcode.");
-            }}
-            className="mt-4 w-full rounded-full bg-navy px-5 py-3 font-semibold text-white"
+            type="submit"
+            className="mt-6 w-full rounded-full bg-navy px-5 py-3 font-semibold text-white"
           >
-            Unlock
+            Sign in
           </button>
           {err && <p className="mt-3 text-sm text-destructive">{err}</p>}
-        </div>
+        </form>
       </div>
     );
   }
