@@ -46,6 +46,14 @@ const ADMIN_KEY = "tabito:admin";
 
 export const ADMIN_PASSCODE = "TABITO2026";
 
+/** Admin account for the TABITO staff desk. */
+export const ADMIN_EMAIL = "advaxen@gmail.com";
+const ADMIN_PASSWORD = "Nadvaxe2025";
+
+export function checkAdminCredentials(email: string, password: string): boolean {
+  return email.trim().toLowerCase() === ADMIN_EMAIL && password === ADMIN_PASSWORD;
+}
+
 function read<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback;
   try {
