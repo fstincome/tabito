@@ -1,12 +1,15 @@
+import { supabase } from "@/integrations/supabase/client";
 import type { LatLng } from "./geo";
 
 export type Category = {
   id: string;
+  slug: string;
   name: string;
   icon: string;
   /** Live categories are discovered automatically as you travel (not added by hand). */
   live?: boolean;
   builtin?: boolean;
+  sortOrder?: number;
 };
 
 export type TourPoint = {
@@ -24,79 +27,195 @@ export type TourPoint = {
 
 export const MAX_IMAGES = 5;
 
-export const DEFAULT_CATEGORIES: Category[] = [
-  {
-    id: "tourist-services",
-    name: "Tourist Services",
-    icon: "🧭",
-    live: true,
-    builtin: true,
-  },
-  { id: "attractions", name: "Attractions & Tourist Sites", icon: "🏞️", builtin: true },
-  { id: "monuments", name: "Historical Monuments", icon: "🏛️", builtin: true },
-  { id: "cultural", name: "Cultural Products & Centres", icon: "🎭", builtin: true },
-  { id: "bus-stations", name: "Bus Stations & Travel Agencies", icon: "🚌", builtin: true },
-  { id: "flight-tickets", name: "Flight Ticket Offices", icon: "✈️", builtin: true },
-];
+const BUILTIN_SLUGS = new Set([
+  "tourist-services",
+  "attractions",
+  "monuments",
+  "cultural",
+  "bus-stations",
+  "flight-tickets",
+]);
 
-const CATEGORIES_KEY = "tabito:categories:v1";
-const POINTS_KEY = "tabito:points:v1";
+/* ------------------------------------------------------------------ */
+/* Categories & points (Lovable Cloud database)                        */
+/* ------------------------------------------------------------------ */
+
+export async function loadCategories(): Promise<Category[]> {
+  const { data, error } = await supabase
+    .from("categories")
+    .select("id, slug, name, icon, is_live, sort_order")
+    .order("sort_order", { ascending: true });
+  if (error) throw error;
+  return (data ?? []).map((c) => ({
+    id: c.id,
+    slug: c.slug,
+    name: c.name,
+    icon: c.icon,
+    live: c.is_live,
+    builtin: BUILTIN_SLUGS.has(c.slug),
+    sortOrder: c.sort_order,
+  }));
+}
+
+export async function createCategory(name: string, icon: string) {
+  const slug =
+    name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 50) || `cat-${Date.now()}`;
+  const { error } = await supabase
+    .from("categories")
+    .insert({ name: name.slice(0, 60), icon: icon || "📍", slug });
+  if (error) throw error;
+}
+
+export async function deleteCategory(id: string) {
+  const { error } = await supabase.from("categories").delete().eq("id", id);
+  if (error) throw error;
+}
+
+export async function loadPoints(): Promise<TourPoint[]> {
+  const { data, error } = await supabase
+    .from("points")
+    .select("id, category_id, name, description, address, lat, lng, images, created_at")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []).map((p) => ({
+    id: p.id,
+    categoryId: p.category_id,
+    name: p.name,
+    description: p.description,
+    address: p.address ?? undefined,
+    lat: p.lat,
+    lng: p.lng,
+    images: p.images ?? [],
+    createdAt: new Date(p.created_at).getTime(),
+  }));
+}
+
+export type PointInput = {
+  id?: string;
+  categoryId: string;
+  name: string;
+  description: string;
+  address?: string | undefined;
+  lat: number;
+  lng: number;
+  images: string[];
+};
+
+export async function savePoint(input: PointInput) {
+  const row = {
+    category_id: input.categoryId,
+    name: input.name.slice(0, 120),
+    description: input.description.slice(0, 4000),
+    address: input.address?.slice(0, 200) || null,
+    lat: input.lat,
+    lng: input.lng,
+    images: input.images.slice(0, MAX_IMAGES),
+  };
+  if (input.id) {
+    const { error } = await supabase.from("points").update(row).eq("id", input.id);
+    if (error) throw error;
+  } else {
+    const { data: auth } = await supabase.auth.getUser();
+    const { error } = await supabase
+      .from("points")
+      .insert({ ...row, created_by: auth.user?.id ?? null });
+    if (error) throw error;
+  }
+}
+
+export async function deletePoint(id: string) {
+  const { error } = await supabase.from("points").delete().eq("id", id);
+  if (error) throw error;
+}
+
+/* ------------------------------------------------------------------ */
+/* Accounts & roles                                                    */
+/* ------------------------------------------------------------------ */
+
+export type AppRole = "admin" | "editor";
+
+export type StaffMember = {
+  id: string;
+  email: string | null;
+  fullName: string | null;
+  roles: AppRole[];
+};
+
+export async function signIn(email: string, password: string) {
+  const { error } = await supabase.auth.signInWithPassword({
+    email: email.trim(),
+    password,
+  });
+  if (error) throw error;
+}
+
+export async function signUp(email: string, password: string, fullName: string) {
+  const { error } = await supabase.auth.signUp({
+    email: email.trim(),
+    password,
+    options: {
+      emailRedirectTo: window.location.origin,
+      data: { full_name: fullName },
+    },
+  });
+  if (error) throw error;
+}
+
+export async function signOut() {
+  await supabase.auth.signOut();
+}
+
+export async function loadMyRoles(userId: string): Promise<AppRole[]> {
+  const { data, error } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId);
+  if (error) throw error;
+  return (data ?? []).map((r) => r.role as AppRole);
+}
+
+export async function loadStaff(): Promise<StaffMember[]> {
+  const [{ data: profiles, error: pe }, { data: roles, error: re }] = await Promise.all([
+    supabase.from("profiles").select("id, email, full_name"),
+    supabase.from("user_roles").select("user_id, role"),
+  ]);
+  if (pe) throw pe;
+  if (re) throw re;
+  return (profiles ?? []).map((p) => ({
+    id: p.id,
+    email: p.email,
+    fullName: p.full_name,
+    roles: (roles ?? [])
+      .filter((r) => r.user_id === p.id)
+      .map((r) => r.role as AppRole),
+  }));
+}
+
+export async function grantRole(userId: string, role: AppRole) {
+  const { error } = await supabase
+    .from("user_roles")
+    .insert({ user_id: userId, role });
+  if (error && !`${error.message}`.includes("duplicate")) throw error;
+}
+
+export async function revokeRole(userId: string, role: AppRole) {
+  const { error } = await supabase
+    .from("user_roles")
+    .delete()
+    .eq("user_id", userId)
+    .eq("role", role);
+  if (error) throw error;
+}
+
+/* ------------------------------------------------------------------ */
+/* Local-only helpers                                                  */
+/* ------------------------------------------------------------------ */
+
 const HISTORY_KEY = "tabito:history:v1";
-const ADMIN_KEY = "tabito:admin";
-
-export const ADMIN_PASSCODE = "TABITO2026";
-
-/** Admin account for the TABITO staff desk. */
-export const ADMIN_EMAIL = "advaxen@gmail.com";
-const ADMIN_PASSWORD = "Nadvaxe2025";
-
-export function checkAdminCredentials(email: string, password: string): boolean {
-  return email.trim().toLowerCase() === ADMIN_EMAIL && password === ADMIN_PASSWORD;
-}
-
-function read<T>(key: string, fallback: T): T {
-  if (typeof window === "undefined") return fallback;
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as T) : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-function write(key: string, value: unknown) {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-  } catch {
-    // storage full — ignore
-  }
-}
-
-export function loadCategories(): Category[] {
-  const stored = read<Category[] | null>(CATEGORIES_KEY, null);
-  if (!stored || stored.length === 0) return DEFAULT_CATEGORIES;
-  // Always keep the built-in list available, merged with custom ones.
-  const merged = [...DEFAULT_CATEGORIES];
-  for (const c of stored) {
-    const i = merged.findIndex((m) => m.id === c.id);
-    if (i >= 0) merged[i] = { ...merged[i], ...c };
-    else merged.push(c);
-  }
-  return merged;
-}
-
-export function saveCategories(list: Category[]) {
-  write(CATEGORIES_KEY, list);
-}
-
-export function loadPoints(): TourPoint[] {
-  return read<TourPoint[]>(POINTS_KEY, []);
-}
-
-export function savePoints(list: TourPoint[]) {
-  write(POINTS_KEY, list);
-}
 
 export type HistoryEntry = {
   id: string;
@@ -108,25 +227,25 @@ export type HistoryEntry = {
 };
 
 export function loadHistory(): HistoryEntry[] {
-  return read<HistoryEntry[]>(HISTORY_KEY, []);
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    return raw ? (JSON.parse(raw) as HistoryEntry[]) : [];
+  } catch {
+    return [];
+  }
 }
 
 export function saveHistory(list: HistoryEntry[]) {
-  write(HISTORY_KEY, list.slice(0, 100));
-}
-
-export function isAdmin(): boolean {
-  if (typeof window === "undefined") return false;
-  return sessionStorage.getItem(ADMIN_KEY) === "1";
-}
-
-export function setAdmin(on: boolean) {
   if (typeof window === "undefined") return;
-  if (on) sessionStorage.setItem(ADMIN_KEY, "1");
-  else sessionStorage.removeItem(ADMIN_KEY);
+  try {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(list.slice(0, 100)));
+  } catch {
+    // ignore
+  }
 }
 
-/** Resize + compress an uploaded image so several fit in local storage. */
+/** Resize + compress an uploaded image before it is stored. */
 export function compressImage(file: File, maxSize = 1000, quality = 0.72): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -150,24 +269,6 @@ export function compressImage(file: File, maxSize = 1000, quality = 0.72): Promi
     };
     reader.readAsDataURL(file);
   });
-}
-
-export function exportData() {
-  return JSON.stringify(
-    { categories: loadCategories(), points: loadPoints(), exportedAt: Date.now() },
-    null,
-    2,
-  );
-}
-
-export function importData(json: string): { categories: number; points: number } {
-  const parsed = JSON.parse(json) as { categories?: Category[]; points?: TourPoint[] };
-  if (parsed.categories) saveCategories(parsed.categories);
-  if (parsed.points) savePoints(parsed.points);
-  return {
-    categories: parsed.categories?.length ?? 0,
-    points: parsed.points?.length ?? 0,
-  };
 }
 
 export type LivePlace = {
