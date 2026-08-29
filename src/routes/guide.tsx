@@ -36,14 +36,14 @@ export const Route = createFileRoute("/guide")({
 function Guide() {
   const { cat } = Route.useSearch();
   const navigate = Route.useNavigate();
-  const [categories, setCategories] = useState<Category[]>(DEFAULT_CATEGORIES);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [points, setPoints] = useState<TourPoint[]>([]);
   const [open, setOpen] = useState<TourPoint | null>(null);
   const [shot, setShot] = useState(0);
 
   useEffect(() => {
-    setCategories(loadCategories());
-    setPoints(loadPoints());
+    void loadCategories().then(setCategories).catch(() => setCategories([]));
+    void loadPoints().then(setPoints).catch(() => setPoints([]));
   }, []);
 
   const visible = useMemo(
