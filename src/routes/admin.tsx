@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TabitoMap } from "@/components/TabitoMap";
 import type { LatLng } from "@/lib/geo";
 import {
-  ADMIN_PASSCODE,
+  checkAdminCredentials,
   DEFAULT_CATEGORIES,
   MAX_IMAGES,
   compressImage,
@@ -51,6 +51,7 @@ const EMPTY_FORM = {
 
 function Admin() {
   const [authed, setAuthed] = useState(false);
+  const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
   const [categories, setCategories] = useState<Category[]>(DEFAULT_CATEGORIES);
   const [points, setPoints] = useState<TourPoint[]>([]);
