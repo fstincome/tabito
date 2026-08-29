@@ -7,9 +7,12 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
+  // TABITO ships as a 100% static site (no server runtime): the build produces a
+  // plain folder of HTML/JS/CSS that can be uploaded to any cPanel host.
+  nitro: false,
   tanstackStart: {
-    // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
-    // nitro/vite builds from this
+    // Single-page-app mode: one prerendered shell, everything else client-side.
+    spa: { enabled: true },
     server: { entry: "server" },
   },
 });
