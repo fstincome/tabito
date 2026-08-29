@@ -14,7 +14,7 @@ export type TourPoint = {
   categoryId: string;
   name: string;
   description: string;
-  address?: string;
+  address?: string | undefined;
   lat: number;
   lng: number;
   /** Up to 5 compressed data-URL images. */

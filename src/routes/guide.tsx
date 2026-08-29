@@ -9,7 +9,7 @@ import {
   type TourPoint,
 } from "@/lib/tabito";
 
-type Search = { cat?: string };
+type Search = { cat?: string | undefined };
 
 export const Route = createFileRoute("/guide")({
   validateSearch: (search: Record<string, unknown>): Search => ({
