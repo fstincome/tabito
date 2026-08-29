@@ -23,14 +23,18 @@ export const Route = createFileRoute("/")({
 });
 
 function Welcome() {
-  const [categories, setCategories] = useState<Category[]>(DEFAULT_CATEGORIES);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [counts, setCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
-    setCategories(loadCategories());
-    const c: Record<string, number> = {};
-    for (const p of loadPoints()) c[p.categoryId] = (c[p.categoryId] ?? 0) + 1;
-    setCounts(c);
+    void loadCategories().then(setCategories).catch(() => setCategories([]));
+    void loadPoints()
+      .then((pts) => {
+        const c: Record<string, number> = {};
+        for (const p of pts) c[p.categoryId] = (c[p.categoryId] ?? 0) + 1;
+        setCounts(c);
+      })
+      .catch(() => setCounts({}));
   }, []);
 
   return (
