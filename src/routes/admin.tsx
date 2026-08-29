@@ -2,20 +2,25 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TabitoMap } from "@/components/TabitoMap";
 import type { LatLng } from "@/lib/geo";
+import { useSession } from "@/hooks/useSession";
 import {
-  checkAdminCredentials,
-  DEFAULT_CATEGORIES,
   MAX_IMAGES,
   compressImage,
-  exportData,
-  importData,
-  isAdmin,
+  createCategory,
+  deleteCategory,
+  deletePoint,
+  grantRole,
   loadCategories,
   loadPoints,
-  saveCategories,
-  savePoints,
-  setAdmin,
+  loadStaff,
+  revokeRole,
+  savePoint,
+  signIn,
+  signOut,
+  signUp,
+  type AppRole,
   type Category,
+  type StaffMember,
   type TourPoint,
 } from "@/lib/tabito";
 
@@ -40,7 +45,7 @@ export const Route = createFileRoute("/admin")({
 
 const EMPTY_FORM = {
   id: "",
-  categoryId: "attractions",
+  categoryId: "",
   name: "",
   description: "",
   address: "",
@@ -50,11 +55,16 @@ const EMPTY_FORM = {
 };
 
 function Admin() {
-  const [authed, setAuthed] = useState(false);
+  const { user, isAdmin, isStaff, loading } = useSession();
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
-  const [categories, setCategories] = useState<Category[]>(DEFAULT_CATEGORIES);
+  const [fullName, setFullName] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const [categories, setCategories] = useState<Category[]>([]);
   const [points, setPoints] = useState<TourPoint[]>([]);
+  const [staff, setStaff] = useState<StaffMember[]>([]);
   const [form, setForm] = useState(EMPTY_FORM);
   const [newCat, setNewCat] = useState({ name: "", icon: "📍" });
   const [msg, setMsg] = useState<string | null>(null);
@@ -63,11 +73,36 @@ function Admin() {
   const watchRef = useRef<number | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    setAuthed(isAdmin());
-    setCategories(loadCategories());
-    setPoints(loadPoints());
+  const flash = (m: string) => {
+    setMsg(m);
+    setTimeout(() => setMsg(null), 2800);
+  };
+  const fail = (e: unknown) =>
+    setErr(e instanceof Error ? e.message : "Something went wrong.");
+
+  const refresh = useCallback(async () => {
+    try {
+      const [cats, pts] = await Promise.all([loadCategories(), loadPoints()]);
+      setCategories(cats);
+      setPoints(pts);
+      setForm((f) =>
+        f.categoryId
+          ? f
+          : { ...f, categoryId: cats.find((c) => !c.live)?.id ?? "" },
+      );
+    } catch (e) {
+      fail(e);
+    }
   }, []);
+
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    void loadStaff().then(setStaff).catch(() => setStaff([]));
+  }, [isAdmin, msg]);
 
   useEffect(
     () => () => {
@@ -76,16 +111,10 @@ function Admin() {
     [],
   );
 
-  const editableCategories = useMemo(() => categories.filter((c) => !c.live), [categories]);
-
-  const persistCategories = (list: Category[]) => {
-    setCategories(list);
-    saveCategories(list);
-  };
-  const persistPoints = (list: TourPoint[]) => {
-    setPoints(list);
-    savePoints(list);
-  };
+  const editableCategories = useMemo(
+    () => categories.filter((c) => !c.live),
+    [categories],
+  );
 
   const toggleLive = useCallback(() => {
     if (live) {
@@ -134,45 +163,63 @@ function Admin() {
     if (fileRef.current) fileRef.current.value = "";
   };
 
-  const submitPoint = () => {
+  const submitPoint = async () => {
     const lat = Number(form.lat);
     const lng = Number(form.lng);
+    if (!form.categoryId) return setErr("Choose a category.");
     if (!form.name.trim()) return setErr("Give the point a name.");
-    if (!form.description.trim())
-      return setErr("Describe what happens at this point.");
+    if (!form.description.trim()) return setErr("Describe what happens at this point.");
     if (!Number.isFinite(lat) || Math.abs(lat) > 90 || !Number.isFinite(lng) || Math.abs(lng) > 180)
       return setErr("Invalid coordinates. Use live capture, the map, or type them.");
     setErr(null);
-
-    const point: TourPoint = {
-      id: form.id || `pt-${Date.now()}`,
-      categoryId: form.categoryId,
-      name: form.name.trim().slice(0, 120),
-      description: form.description.trim().slice(0, 2000),
-      address: form.address.trim().slice(0, 200) || undefined,
-      lat,
-      lng,
-      images: form.images.slice(0, MAX_IMAGES),
-      createdAt: Date.now(),
-    };
-    const next = form.id
-      ? points.map((p) => (p.id === form.id ? point : p))
-      : [point, ...points];
-    persistPoints(next);
-    setForm(EMPTY_FORM);
-    setMsg(form.id ? "Point updated." : "Point published.");
-    setTimeout(() => setMsg(null), 2500);
+    setBusy(true);
+    try {
+      await savePoint({
+        ...(form.id ? { id: form.id } : {}),
+        categoryId: form.categoryId,
+        name: form.name.trim(),
+        description: form.description.trim(),
+        address: form.address.trim() || undefined,
+        lat,
+        lng,
+        images: form.images,
+      });
+      const keepCat = form.categoryId;
+      setForm({ ...EMPTY_FORM, categoryId: keepCat });
+      await refresh();
+      flash(form.id ? "Point updated." : "Point published.");
+    } catch (e) {
+      fail(e);
+    } finally {
+      setBusy(false);
+    }
   };
 
-  if (!authed) {
-    const signIn = () => {
-      if (checkAdminCredentials(email, pass)) {
-        setAdmin(true);
-        setAuthed(true);
-        setErr(null);
+  /* ---------------- auth screens ---------------- */
+
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-md px-4 py-24 text-center text-muted-foreground">
+        Loading…
+      </div>
+    );
+  }
+
+  if (!user) {
+    const submit = async () => {
+      setBusy(true);
+      setErr(null);
+      try {
+        if (mode === "signin") await signIn(email, pass);
+        else {
+          await signUp(email, pass, fullName);
+          flash("Account created. An admin must grant you access rights.");
+        }
         setPass("");
-      } else {
-        setErr("Wrong email or password.");
+      } catch (e) {
+        fail(e);
+      } finally {
+        setBusy(false);
       }
     };
 
@@ -182,13 +229,30 @@ function Admin() {
           className="surface p-8"
           onSubmit={(e) => {
             e.preventDefault();
-            signIn();
+            void submit();
           }}
         >
-          <h1 className="font-display text-2xl font-bold text-navy">Admin sign in</h1>
+          <h1 className="font-display text-2xl font-bold text-navy">
+            {mode === "signin" ? "Staff sign in" : "Create a staff account"}
+          </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Sign in with your TABITO staff account to manage categories and publish points.
+            TABITO staff accounts manage categories and publish tourist points.
           </p>
+
+          {mode === "signup" && (
+            <>
+              <label className="mt-5 block text-xs font-bold uppercase tracking-widest text-navy">
+                Full name
+              </label>
+              <input
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Jean Tabito"
+                className="mt-1 w-full rounded-lg border border-input bg-background px-4 py-2.5"
+              />
+            </>
+          )}
+
           <label className="mt-5 block text-xs font-bold uppercase tracking-widest text-navy">
             Email
           </label>
@@ -205,7 +269,7 @@ function Admin() {
           </label>
           <input
             type="password"
-            autoComplete="current-password"
+            autoComplete={mode === "signin" ? "current-password" : "new-password"}
             value={pass}
             onChange={(e) => setPass(e.target.value)}
             placeholder="••••••••"
@@ -213,15 +277,51 @@ function Admin() {
           />
           <button
             type="submit"
-            className="mt-6 w-full rounded-full bg-navy px-5 py-3 font-semibold text-white"
+            disabled={busy}
+            className="mt-6 w-full rounded-full bg-navy px-5 py-3 font-semibold text-white disabled:opacity-60"
           >
-            Sign in
+            {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
           </button>
+          <button
+            type="button"
+            onClick={() => {
+              setMode(mode === "signin" ? "signup" : "signin");
+              setErr(null);
+            }}
+            className="mt-3 w-full text-sm font-semibold text-navy underline"
+          >
+            {mode === "signin"
+              ? "New team member? Create an account"
+              : "Already have an account? Sign in"}
+          </button>
+          {msg && <p className="mt-3 text-sm text-palm">{msg}</p>}
           {err && <p className="mt-3 text-sm text-destructive">{err}</p>}
         </form>
       </div>
     );
   }
+
+  if (!isStaff) {
+    return (
+      <div className="mx-auto max-w-md px-4 py-20">
+        <div className="surface p-8 text-center">
+          <h1 className="font-display text-2xl font-bold text-navy">Waiting for access</h1>
+          <p className="mt-3 text-sm text-muted-foreground">
+            You are signed in as <strong>{user.email}</strong>, but no role has been
+            granted yet. A TABITO admin must give you editor or admin rights.
+          </p>
+          <button
+            onClick={() => void signOut()}
+            className="mt-6 rounded-full bg-muted px-5 py-2.5 font-semibold"
+          >
+            Sign out
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  /* ---------------- admin desk ---------------- */
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
@@ -229,52 +329,15 @@ function Admin() {
         <div>
           <h1 className="font-display text-3xl font-extrabold text-navy">Admin desk</h1>
           <p className="text-muted-foreground">
-            Categories, coordinates, photos and descriptions.
+            Signed in as {user.email} · {isAdmin ? "admin" : "editor"}
           </p>
         </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => {
-              const blob = new Blob([exportData()], { type: "application/json" });
-              const a = document.createElement("a");
-              a.href = URL.createObjectURL(blob);
-              a.download = "tabito-guide.json";
-              a.click();
-            }}
-            className="rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold"
-          >
-            ⭳ Export
-          </button>
-          <label className="cursor-pointer rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold">
-            ⭱ Import
-            <input
-              type="file"
-              accept="application/json"
-              className="hidden"
-              onChange={async (e) => {
-                const f = e.target.files?.[0];
-                if (!f) return;
-                try {
-                  importData(await f.text());
-                  setCategories(loadCategories());
-                  setPoints(loadPoints());
-                  setMsg("Guide data imported.");
-                } catch {
-                  setErr("Invalid backup file.");
-                }
-              }}
-            />
-          </label>
-          <button
-            onClick={() => {
-              setAdmin(false);
-              setAuthed(false);
-            }}
-            className="rounded-full bg-muted px-4 py-2 text-sm font-semibold"
-          >
-            Lock
-          </button>
-        </div>
+        <button
+          onClick={() => void signOut()}
+          className="rounded-full bg-muted px-4 py-2 text-sm font-semibold"
+        >
+          Sign out
+        </button>
       </div>
 
       {msg && (
@@ -305,9 +368,14 @@ function Admin() {
               )}
               {!c.builtin && (
                 <button
-                  onClick={() => {
-                    persistCategories(categories.filter((x) => x.id !== c.id));
-                    persistPoints(points.filter((p) => p.categoryId !== c.id));
+                  onClick={async () => {
+                    try {
+                      await deleteCategory(c.id);
+                      await refresh();
+                      flash("Category removed.");
+                    } catch (e) {
+                      fail(e);
+                    }
                   }}
                   className="text-muted-foreground hover:text-destructive"
                   aria-label={`Delete ${c.name}`}
@@ -332,19 +400,18 @@ function Admin() {
             className="min-w-56 flex-1 rounded-lg border border-input bg-background px-4 py-2"
           />
           <button
-            onClick={() => {
+            onClick={async () => {
               const name = newCat.name.trim();
               if (!name) return setErr("Category name required.");
-              persistCategories([
-                ...categories,
-                {
-                  id: `cat-${Date.now()}`,
-                  name: name.slice(0, 60),
-                  icon: newCat.icon || "📍",
-                },
-              ]);
-              setNewCat({ name: "", icon: "📍" });
-              setErr(null);
+              try {
+                await createCategory(name, newCat.icon);
+                setNewCat({ name: "", icon: "📍" });
+                setErr(null);
+                await refresh();
+                flash("Category added.");
+              } catch (e) {
+                fail(e);
+              }
             }}
             className="rounded-full bg-navy px-5 py-2.5 font-semibold text-white"
           >
@@ -474,7 +541,7 @@ function Admin() {
                     accept="image/*"
                     multiple
                     className="hidden"
-                    onChange={(e) => onFiles(e.target.files)}
+                    onChange={(e) => void onFiles(e.target.files)}
                   />
                 </label>
               )}
@@ -483,14 +550,15 @@ function Admin() {
 
           <div className="mt-6 flex gap-3">
             <button
-              onClick={submitPoint}
-              className="rounded-full bg-sunset px-6 py-3 font-semibold text-white shadow-lift"
+              onClick={() => void submitPoint()}
+              disabled={busy}
+              className="rounded-full bg-sunset px-6 py-3 font-semibold text-white shadow-lift disabled:opacity-60"
             >
               {form.id ? "✓ Save changes" : "✓ Publish point"}
             </button>
             {form.id && (
               <button
-                onClick={() => setForm(EMPTY_FORM)}
+                onClick={() => setForm({ ...EMPTY_FORM, categoryId: form.categoryId })}
                 className="rounded-full bg-muted px-5 py-3 font-semibold"
               >
                 Cancel
@@ -562,7 +630,15 @@ function Admin() {
                       Edit
                     </button>
                     <button
-                      onClick={() => persistPoints(points.filter((x) => x.id !== p.id))}
+                      onClick={async () => {
+                        try {
+                          await deletePoint(p.id);
+                          await refresh();
+                          flash("Point deleted.");
+                        } catch (e) {
+                          fail(e);
+                        }
+                      }}
                       className="rounded-full bg-card px-3 py-1 text-xs font-semibold text-destructive"
                     >
                       Delete
@@ -577,6 +653,61 @@ function Admin() {
           </div>
         </div>
       </section>
+
+      {/* Team */}
+      {isAdmin && (
+        <section className="surface mt-8 p-6">
+          <h2 className="font-display text-xl font-bold text-navy">Team accounts</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            New colleagues create their account on this page, then you grant them editor
+            or admin rights here.
+          </p>
+          <ul className="mt-4 space-y-2">
+            {staff.map((m) => (
+              <li
+                key={m.id}
+                className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-muted/60 p-3"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold">
+                    {m.fullName || m.email || m.id}
+                  </p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {m.email} · {m.roles.length ? m.roles.join(", ") : "no access yet"}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {(["editor", "admin"] as AppRole[]).map((role) => {
+                    const has = m.roles.includes(role);
+                    return (
+                      <button
+                        key={role}
+                        onClick={async () => {
+                          try {
+                            if (has) await revokeRole(m.id, role);
+                            else await grantRole(m.id, role);
+                            flash(`${role} ${has ? "revoked" : "granted"}.`);
+                          } catch (e) {
+                            fail(e);
+                          }
+                        }}
+                        className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                          has ? "bg-navy text-white" : "bg-card text-navy"
+                        }`}
+                      >
+                        {has ? `− ${role}` : `+ ${role}`}
+                      </button>
+                    );
+                  })}
+                </div>
+              </li>
+            ))}
+            {staff.length === 0 && (
+              <li className="text-sm text-muted-foreground">No accounts yet.</li>
+            )}
+          </ul>
+        </section>
+      )}
     </div>
   );
 }

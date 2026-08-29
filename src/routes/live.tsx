@@ -3,7 +3,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TabitoMap } from "@/components/TabitoMap";
 import { distanceMeters, formatDistance, type LatLng } from "@/lib/geo";
 import {
-  DEFAULT_CATEGORIES,
   fetchLiveServices,
   loadCategories,
   loadHistory,
@@ -49,7 +48,7 @@ function Live() {
   const [services, setServices] = useState<LivePlace[]>([]);
   const [servicesLoading, setServicesLoading] = useState(false);
   const [points, setPoints] = useState<TourPoint[]>([]);
-  const [categories, setCategories] = useState<Category[]>(DEFAULT_CATEGORIES);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
 
   const watchRef = useRef<number | null>(null);
@@ -57,8 +56,8 @@ function Live() {
   const alertedRef = useRef<Record<string, number>>({});
 
   useEffect(() => {
-    setPoints(loadPoints());
-    setCategories(loadCategories());
+    void loadPoints().then(setPoints).catch(() => setPoints([]));
+    void loadCategories().then(setCategories).catch(() => setCategories([]));
     setHistory(loadHistory());
     if (typeof Notification !== "undefined") setNotifPerm(Notification.permission);
   }, []);
