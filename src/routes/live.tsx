@@ -3,7 +3,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TabitoMap } from "@/components/TabitoMap";
 import { distanceMeters, formatDistance, type LatLng } from "@/lib/geo";
 import {
-  DEFAULT_CATEGORIES,
   fetchLiveServices,
   loadCategories,
   loadHistory,
