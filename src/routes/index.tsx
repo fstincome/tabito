@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { DEFAULT_CATEGORIES, loadCategories, loadPoints, type Category } from "@/lib/tabito";
+import { loadCategories, loadPoints, type Category } from "@/lib/tabito";
 
 export const Route = createFileRoute("/")({
   component: Welcome,
