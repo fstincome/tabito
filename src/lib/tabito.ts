@@ -127,10 +127,13 @@ export async function deleteCategory(id: string) {
   if (error) throw error;
 }
 
+const num = (v: unknown): number | null =>
+  v === null || v === undefined || v === "" ? null : Number(v);
+
 export async function loadPoints(): Promise<TourPoint[]> {
   const { data, error } = await supabase
     .from("points")
-    .select("id, category_id, name, description, address, lat, lng, images, created_at")
+    .select("*")
     .order("created_at", { ascending: false });
   if (error) throw error;
   return (data ?? []).map((p) => ({
@@ -143,10 +146,28 @@ export async function loadPoints(): Promise<TourPoint[]> {
     lng: p.lng,
     images: p.images ?? [],
     createdAt: new Date(p.created_at).getTime(),
+    region: p.region ?? "",
+    municipality: p.municipality ?? "",
+    management: p.management ?? "",
+    accessTypes: (p.access_types ?? []) as AccessType[],
+    accessNotes: p.access_notes ?? "",
+    distDestKm: num(p.dist_dest_km),
+    distDestHours: num(p.dist_dest_hours),
+    distBujaKm: num(p.dist_buja_km),
+    distBujaHours: num(p.dist_buja_hours),
+    siteCode: p.site_code ?? "",
+    narrativeGeneral: p.narrative_general ?? "",
+    narrativeSeasonal: p.narrative_seasonal ?? "",
+    mediaUrl: p.media_url ?? "",
+    merchantCode: p.merchant_code ?? "",
+    restrictions: p.restrictions ?? "",
+    weatherSensors: p.weather_sensors ?? false,
+    openingHours: p.opening_hours ?? "",
+    localContacts: p.local_contacts ?? "",
   }));
 }
 
-export type PointInput = {
+export type PointInput = SiteSpec & {
   id?: string;
   categoryId: string;
   name: string;
@@ -166,6 +187,24 @@ export async function savePoint(input: PointInput) {
     lat: input.lat,
     lng: input.lng,
     images: input.images.slice(0, MAX_IMAGES),
+    region: input.region.trim() || null,
+    municipality: input.municipality.trim() || null,
+    management: input.management.trim() || null,
+    access_types: input.accessTypes,
+    access_notes: input.accessNotes.trim() || null,
+    dist_dest_km: input.distDestKm,
+    dist_dest_hours: input.distDestHours,
+    dist_buja_km: input.distBujaKm,
+    dist_buja_hours: input.distBujaHours,
+    site_code: input.siteCode.trim() || null,
+    narrative_general: input.narrativeGeneral.trim() || null,
+    narrative_seasonal: input.narrativeSeasonal.trim() || null,
+    media_url: input.mediaUrl.trim() || null,
+    merchant_code: input.merchantCode.trim() || null,
+    restrictions: input.restrictions.trim() || null,
+    weather_sensors: input.weatherSensors,
+    opening_hours: input.openingHours.trim() || null,
+    local_contacts: input.localContacts.trim() || null,
   };
   if (input.id) {
     const { error } = await supabase.from("points").update(row).eq("id", input.id);
@@ -178,6 +217,7 @@ export async function savePoint(input: PointInput) {
     if (error) throw error;
   }
 }
+
 
 export async function deletePoint(id: string) {
   const { error } = await supabase.from("points").delete().eq("id", id);
