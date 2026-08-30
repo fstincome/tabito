@@ -4,6 +4,7 @@ import { TabitoMap } from "@/components/TabitoMap";
 import type { LatLng } from "@/lib/geo";
 import { useSession } from "@/hooks/useSession";
 import {
+  ACCESS_TYPES,
   MAX_IMAGES,
   compressImage,
   createCategory,
