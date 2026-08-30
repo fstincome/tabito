@@ -12,7 +12,58 @@ export type Category = {
   sortOrder?: number;
 };
 
-export type TourPoint = {
+export type AccessType = "road" | "maritime" | "air";
+
+export const ACCESS_TYPES: { value: AccessType; label: string; icon: string }[] = [
+  { value: "road", label: "Road", icon: "🛣️" },
+  { value: "maritime", label: "Maritime", icon: "⛴️" },
+  { value: "air", label: "Air", icon: "✈️" },
+];
+
+/** Official site specification sheet used by the tourism authorities. */
+export type SiteSpec = {
+  region: string;
+  municipality: string;
+  management: string;
+  accessTypes: AccessType[];
+  accessNotes: string;
+  distDestKm: number | null;
+  distDestHours: number | null;
+  distBujaKm: number | null;
+  distBujaHours: number | null;
+  siteCode: string;
+  narrativeGeneral: string;
+  narrativeSeasonal: string;
+  mediaUrl: string;
+  merchantCode: string;
+  restrictions: string;
+  weatherSensors: boolean;
+  openingHours: string;
+  localContacts: string;
+};
+
+export const EMPTY_SPEC: SiteSpec = {
+  region: "",
+  municipality: "",
+  management: "",
+  accessTypes: [],
+  accessNotes: "",
+  distDestKm: null,
+  distDestHours: null,
+  distBujaKm: null,
+  distBujaHours: null,
+  siteCode: "",
+  narrativeGeneral: "",
+  narrativeSeasonal: "",
+  mediaUrl: "",
+  merchantCode: "",
+  restrictions: "",
+  weatherSensors: false,
+  openingHours: "",
+  localContacts: "",
+};
+
+export type TourPoint = SiteSpec & {
   id: string;
   categoryId: string;
   name: string;
@@ -26,6 +77,7 @@ export type TourPoint = {
 };
 
 export const MAX_IMAGES = 5;
+
 
 const BUILTIN_SLUGS = new Set([
   "tourist-services",
