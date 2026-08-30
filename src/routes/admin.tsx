@@ -211,7 +211,26 @@ function Admin() {
         lat,
         lng,
         images: form.images,
+        region: form.region,
+        municipality: form.municipality,
+        management: form.management,
+        accessTypes: form.accessTypes,
+        accessNotes: form.accessNotes,
+        distDestKm: numOrNull(form.distDestKm),
+        distDestHours: numOrNull(form.distDestHours),
+        distBujaKm: numOrNull(form.distBujaKm),
+        distBujaHours: numOrNull(form.distBujaHours),
+        siteCode: form.siteCode,
+        narrativeGeneral: form.narrativeGeneral,
+        narrativeSeasonal: form.narrativeSeasonal,
+        mediaUrl: form.mediaUrl,
+        merchantCode: form.merchantCode,
+        restrictions: form.restrictions,
+        weatherSensors: form.weatherSensors,
+        openingHours: form.openingHours,
+        localContacts: form.localContacts,
       });
+
       const keepCat = form.categoryId;
       setForm({ ...EMPTY_FORM, categoryId: keepCat });
       await refresh();
