@@ -46,43 +46,97 @@ export type Database = {
       }
       points: {
         Row: {
+          access_notes: string | null
+          access_types: string[]
           address: string | null
           category_id: string
           created_at: string
           created_by: string | null
           description: string
+          dist_buja_hours: number | null
+          dist_buja_km: number | null
+          dist_dest_hours: number | null
+          dist_dest_km: number | null
           id: string
           images: string[]
           lat: number
           lng: number
+          local_contacts: string | null
+          management: string | null
+          media_url: string | null
+          merchant_code: string | null
+          municipality: string | null
           name: string
+          narrative_general: string | null
+          narrative_seasonal: string | null
+          opening_hours: string | null
+          region: string | null
+          restrictions: string | null
+          site_code: string | null
           updated_at: string
+          weather_sensors: boolean
         }
         Insert: {
+          access_notes?: string | null
+          access_types?: string[]
           address?: string | null
           category_id: string
           created_at?: string
           created_by?: string | null
           description?: string
+          dist_buja_hours?: number | null
+          dist_buja_km?: number | null
+          dist_dest_hours?: number | null
+          dist_dest_km?: number | null
           id?: string
           images?: string[]
           lat: number
           lng: number
+          local_contacts?: string | null
+          management?: string | null
+          media_url?: string | null
+          merchant_code?: string | null
+          municipality?: string | null
           name: string
+          narrative_general?: string | null
+          narrative_seasonal?: string | null
+          opening_hours?: string | null
+          region?: string | null
+          restrictions?: string | null
+          site_code?: string | null
           updated_at?: string
+          weather_sensors?: boolean
         }
         Update: {
+          access_notes?: string | null
+          access_types?: string[]
           address?: string | null
           category_id?: string
           created_at?: string
           created_by?: string | null
           description?: string
+          dist_buja_hours?: number | null
+          dist_buja_km?: number | null
+          dist_dest_hours?: number | null
+          dist_dest_km?: number | null
           id?: string
           images?: string[]
           lat?: number
           lng?: number
+          local_contacts?: string | null
+          management?: string | null
+          media_url?: string | null
+          merchant_code?: string | null
+          municipality?: string | null
           name?: string
+          narrative_general?: string | null
+          narrative_seasonal?: string | null
+          opening_hours?: string | null
+          region?: string | null
+          restrictions?: string | null
+          site_code?: string | null
           updated_at?: string
+          weather_sensors?: boolean
         }
         Relationships: [
           {
