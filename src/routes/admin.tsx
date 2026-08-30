@@ -557,6 +557,203 @@ function Admin() {
             </button>
           </div>
 
+          <div className="mt-8 border-t border-border pt-5">
+            <h3 className="font-display text-lg font-bold text-navy">
+              Official site specification
+            </h3>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Data sheet as defined by the tourism authorities.
+            </p>
+
+            <label className={LABEL}>Access type</label>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {ACCESS_TYPES.map((a) => {
+                const on = form.accessTypes.includes(a.value);
+                return (
+                  <button
+                    key={a.value}
+                    type="button"
+                    onClick={() =>
+                      setForm((f) => ({
+                        ...f,
+                        accessTypes: on
+                          ? f.accessTypes.filter((v) => v !== a.value)
+                          : [...f.accessTypes, a.value],
+                      }))
+                    }
+                    className={`rounded-full px-4 py-2 text-sm font-semibold ${
+                      on ? "bg-navy text-white" : "bg-muted text-navy"
+                    }`}
+                  >
+                    {a.icon} {a.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <label className={LABEL}>Access indication (road name, track length…)</label>
+            <input
+              value={form.accessNotes}
+              onChange={(e) => setForm((f) => ({ ...f, accessNotes: e.target.value }))}
+              className={FIELD}
+            />
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <label className={LABEL}>Natural region / local destination</label>
+                <input
+                  value={form.region}
+                  onChange={(e) => setForm((f) => ({ ...f, region: e.target.value }))}
+                  className={FIELD}
+                />
+              </div>
+              <div>
+                <label className={LABEL}>Municipality</label>
+                <input
+                  value={form.municipality}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, municipality: e.target.value }))
+                  }
+                  className={FIELD}
+                />
+              </div>
+            </div>
+
+            <label className={LABEL}>Administration, management or ownership</label>
+            <input
+              value={form.management}
+              onChange={(e) => setForm((f) => ({ ...f, management: e.target.value }))}
+              className={FIELD}
+            />
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <label className={LABEL}>Distance from destination capital (km)</label>
+                <input
+                  value={form.distDestKm}
+                  inputMode="decimal"
+                  onChange={(e) => setForm((f) => ({ ...f, distDestKm: e.target.value }))}
+                  className={FIELD}
+                />
+              </div>
+              <div>
+                <label className={LABEL}>Distance from destination capital (hours)</label>
+                <input
+                  value={form.distDestHours}
+                  inputMode="decimal"
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, distDestHours: e.target.value }))
+                  }
+                  className={FIELD}
+                />
+              </div>
+              <div>
+                <label className={LABEL}>Distance from Bujumbura (km)</label>
+                <input
+                  value={form.distBujaKm}
+                  inputMode="decimal"
+                  onChange={(e) => setForm((f) => ({ ...f, distBujaKm: e.target.value }))}
+                  className={FIELD}
+                />
+              </div>
+              <div>
+                <label className={LABEL}>Distance from Bujumbura (hours)</label>
+                <input
+                  value={form.distBujaHours}
+                  inputMode="decimal"
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, distBujaHours: e.target.value }))
+                  }
+                  className={FIELD}
+                />
+              </div>
+              <div>
+                <label className={LABEL}>Site code / grade</label>
+                <input
+                  value={form.siteCode}
+                  onChange={(e) => setForm((f) => ({ ...f, siteCode: e.target.value }))}
+                  className={FIELD}
+                />
+              </div>
+              <div>
+                <label className={LABEL}>TABITO merchant code (optional)</label>
+                <input
+                  value={form.merchantCode}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, merchantCode: e.target.value }))
+                  }
+                  className={FIELD}
+                />
+              </div>
+            </div>
+
+            <label className={LABEL}>General narrative</label>
+            <textarea
+              value={form.narrativeGeneral}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, narrativeGeneral: e.target.value }))
+              }
+              rows={4}
+              className={FIELD}
+            />
+
+            <label className={LABEL}>Seasonal narrative</label>
+            <textarea
+              value={form.narrativeSeasonal}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, narrativeSeasonal: e.target.value }))
+              }
+              rows={3}
+              className={FIELD}
+            />
+
+            <label className={LABEL}>Prohibitions and specific precautions</label>
+            <textarea
+              value={form.restrictions}
+              onChange={(e) => setForm((f) => ({ ...f, restrictions: e.target.value }))}
+              rows={3}
+              className={FIELD}
+            />
+
+            <label className={LABEL}>Opening and closing hours</label>
+            <input
+              value={form.openingHours}
+              onChange={(e) => setForm((f) => ({ ...f, openingHours: e.target.value }))}
+              placeholder="08:00 – 17:00, daily"
+              className={FIELD}
+            />
+
+            <label className={LABEL}>
+              Local guides, first-aid or medical assistance contacts
+            </label>
+            <textarea
+              value={form.localContacts}
+              onChange={(e) => setForm((f) => ({ ...f, localContacts: e.target.value }))}
+              rows={2}
+              className={FIELD}
+            />
+
+            <label className={LABEL}>Video link (social network or website)</label>
+            <input
+              value={form.mediaUrl}
+              onChange={(e) => setForm((f) => ({ ...f, mediaUrl: e.target.value }))}
+              placeholder="https://…"
+              className={FIELD}
+            />
+
+            <label className="mt-4 flex items-center gap-2 text-sm font-semibold text-navy">
+              <input
+                type="checkbox"
+                checked={form.weatherSensors}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, weatherSensors: e.target.checked }))
+                }
+              />
+              Weather sensors present on site
+            </label>
+          </div>
+
+
           <div className="mt-5">
             <p className="text-xs font-bold uppercase tracking-widest text-navy">
               Photos ({form.images.length}/{MAX_IMAGES})
