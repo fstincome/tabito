@@ -867,6 +867,25 @@ function Admin() {
                           lat: String(p.lat),
                           lng: String(p.lng),
                           images: p.images,
+                          region: p.region,
+                          municipality: p.municipality,
+                          management: p.management,
+                          accessTypes: p.accessTypes,
+                          accessNotes: p.accessNotes,
+                          distDestKm: p.distDestKm?.toString() ?? "",
+                          distDestHours: p.distDestHours?.toString() ?? "",
+                          distBujaKm: p.distBujaKm?.toString() ?? "",
+                          distBujaHours: p.distBujaHours?.toString() ?? "",
+                          siteCode: p.siteCode,
+                          narrativeGeneral: p.narrativeGeneral,
+                          narrativeSeasonal: p.narrativeSeasonal,
+                          mediaUrl: p.mediaUrl,
+                          merchantCode: p.merchantCode,
+                          restrictions: p.restrictions,
+                          weatherSensors: p.weatherSensors,
+                          openingHours: p.openingHours,
+                          localContacts: p.localContacts,
+
                         })
                       }
                       className="rounded-full bg-card px-3 py-1 text-xs font-semibold"
