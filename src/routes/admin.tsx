@@ -52,7 +52,33 @@ const EMPTY_FORM = {
   lat: "",
   lng: "",
   images: [] as string[],
+  region: "",
+  municipality: "",
+  management: "",
+  accessTypes: [] as AccessType[],
+  accessNotes: "",
+  distDestKm: "",
+  distDestHours: "",
+  distBujaKm: "",
+  distBujaHours: "",
+  siteCode: "",
+  narrativeGeneral: "",
+  narrativeSeasonal: "",
+  mediaUrl: "",
+  merchantCode: "",
+  restrictions: "",
+  weatherSensors: false,
+  openingHours: "",
+  localContacts: "",
 };
+
+const numOrNull = (v: string) => (v.trim() === "" ? null : Number(v));
+
+const FIELD =
+  "mt-1 w-full rounded-lg border border-input bg-background px-4 py-2.5";
+const LABEL =
+  "mt-4 block text-xs font-bold uppercase tracking-widest text-navy";
+
 
 function Admin() {
   const { user, isAdmin, isStaff, loading } = useSession();
