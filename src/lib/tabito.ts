@@ -86,6 +86,10 @@ const BUILTIN_SLUGS = new Set([
   "cultural",
   "bus-stations",
   "flight-tickets",
+  "natural-site",
+  "cultural-heritage",
+  "intangible-heritage",
+  "human-interest-group",
 ]);
 
 /* ------------------------------------------------------------------ */
