@@ -222,6 +222,88 @@ function Guide() {
               {open.description || "No description yet."}
             </p>
 
+            {open.narrativeGeneral && (
+              <div className="mt-4">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-lagoon-deep">
+                  General narrative
+                </p>
+                <p className="whitespace-pre-wrap text-sm leading-relaxed">
+                  {open.narrativeGeneral}
+                </p>
+              </div>
+            )}
+            {open.narrativeSeasonal && (
+              <div className="mt-4">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-lagoon-deep">
+                  Seasonal narrative
+                </p>
+                <p className="whitespace-pre-wrap text-sm leading-relaxed">
+                  {open.narrativeSeasonal}
+                </p>
+              </div>
+            )}
+
+            <dl className="mt-5 grid gap-x-6 gap-y-2 sm:grid-cols-2">
+              {(
+                [
+                  ["Natural region / destination", open.region],
+                  ["Municipality", open.municipality],
+                  ["Administration / management", open.management],
+                  [
+                    "Access type",
+                    open.accessTypes
+                      .map((a) => ACCESS_TYPES.find((x) => x.value === a)?.label ?? a)
+                      .join(", "),
+                  ],
+                  ["Access indication", open.accessNotes],
+                  [
+                    "From destination capital",
+                    [
+                      open.distDestKm != null ? `${open.distDestKm} km` : "",
+                      open.distDestHours != null ? `${open.distDestHours} h` : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" · "),
+                  ],
+                  [
+                    "From Bujumbura",
+                    [
+                      open.distBujaKm != null ? `${open.distBujaKm} km` : "",
+                      open.distBujaHours != null ? `${open.distBujaHours} h` : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" · "),
+                  ],
+                  ["Site code / grade", open.siteCode],
+                  ["TABITO merchant code", open.merchantCode],
+                  ["Opening hours", open.openingHours],
+                  ["Weather sensors", open.weatherSensors ? "Yes" : ""],
+                  ["Prohibitions & precautions", open.restrictions],
+                  ["Local guides / assistance", open.localContacts],
+                ] as [string, string][]
+              )
+                .filter(([, v]) => v)
+                .map(([k, v]) => (
+                  <div key={k}>
+                    <dt className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                      {k}
+                    </dt>
+                    <dd className="whitespace-pre-wrap text-sm">{v}</dd>
+                  </div>
+                ))}
+            </dl>
+
+            {open.mediaUrl && (
+              <a
+                href={open.mediaUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-4 inline-block text-sm font-semibold text-lagoon-deep underline"
+              >
+                ▶ Watch the video
+              </a>
+            )}
+
             <p className="mt-4 font-mono text-xs text-muted-foreground">
               {open.lat.toFixed(5)}, {open.lng.toFixed(5)}
             </p>
@@ -233,6 +315,7 @@ function Guide() {
             >
               Open in maps
             </a>
+
           </div>
         </div>
       )}
