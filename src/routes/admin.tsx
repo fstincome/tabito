@@ -812,31 +812,7 @@ function Admin() {
         </div>
 
         <div className="space-y-4">
-          <TabitoMap
-            position={
-              Number.isFinite(Number(form.lat)) && form.lat !== ""
-                ? ({ lat: Number(form.lat), lng: Number(form.lng) } as LatLng)
-                : null
-            }
-            markers={points.map((p) => ({
-              id: p.id,
-              name: p.name,
-              icon: categories.find((c) => c.id === p.categoryId)?.icon ?? "📍",
-              lat: p.lat,
-              lng: p.lng,
-            }))}
-            height={340}
-            onPick={(pos) =>
-              setForm((f) => ({
-                ...f,
-                lat: pos.lat.toFixed(6),
-                lng: pos.lng.toFixed(6),
-              }))
-            }
-          />
-          <p className="text-xs text-muted-foreground">
-            Tip: click anywhere on the map to drop the coordinates into the form.
-          </p>
+
 
           <div className="surface p-5">
             <h3 className="font-display text-lg font-bold text-navy">
