@@ -73,12 +73,18 @@ function Live() {
       const list = await fetchLiveServices(pos);
       setServices(list);
       lastFetchRef.current = pos;
-    } catch {
-      setError("Tourist services could not be refreshed (network).");
+      setError(null);
+    } catch (err) {
+      setError(
+        `Tourist services could not be refreshed — ${
+          err instanceof Error ? err.message : "network error"
+        }. Tracking stays on; retrying shortly.`,
+      );
     } finally {
       setServicesLoading(false);
     }
   }, []);
+
 
   const startTracking = useCallback(() => {
     if (!("geolocation" in navigator)) {
