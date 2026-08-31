@@ -376,7 +376,13 @@ export type LivePlace = {
   kind: string;
 };
 
-const OVERPASS = "https://overpass-api.de/api/interpreter";
+/** Overpass mirrors, tried in order — the main instance often returns 504 under load. */
+const OVERPASS_MIRRORS = [
+  "https://overpass.kumi.systems/api/interpreter",
+  "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+  "https://overpass.private.coffee/api/interpreter",
+  "https://overpass-api.de/api/interpreter",
+];
 
 const LIVE_KINDS: Record<string, string> = {
   hotel: "🏨",
