@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { TabitoMap } from "@/components/TabitoMap";
 import {
+  ACCESS_TYPES,
   loadCategories,
   loadPoints,
   type Category,
