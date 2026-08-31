@@ -137,6 +137,27 @@ function Admin() {
     [],
   );
 
+  // Prefill the form with the device's current coordinates (still editable).
+  useEffect(() => {
+    if (!("geolocation" in navigator)) return;
+    navigator.geolocation.getCurrentPosition(
+      (p) =>
+        setForm((f) =>
+          f.id || f.lat || f.lng
+            ? f
+            : {
+                ...f,
+                lat: p.coords.latitude.toFixed(6),
+                lng: p.coords.longitude.toFixed(6),
+              },
+        ),
+      () => {},
+      { enableHighAccuracy: true, timeout: 15000 },
+    );
+  }, []);
+
+
+
   const editableCategories = useMemo(
     () => categories.filter((c) => !c.live),
     [categories],
