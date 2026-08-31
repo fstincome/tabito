@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "@/hooks/useSession";
-import { useSession } from "@/hooks/useSession";
 import {
   ACCESS_TYPES,
   MAX_IMAGES,
