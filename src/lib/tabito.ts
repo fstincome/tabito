@@ -378,8 +378,8 @@ export type LivePlace = {
 
 /** Overpass mirrors, tried in order — the main instance often returns 504 under load. */
 const OVERPASS_MIRRORS = [
-  "https://overpass.kumi.systems/api/interpreter",
   "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+  "https://overpass.kumi.systems/api/interpreter",
   "https://overpass.private.coffee/api/interpreter",
   "https://overpass-api.de/api/interpreter",
 ];
@@ -433,7 +433,7 @@ export async function fetchLiveServices(
 
   for (const url of OVERPASS_MIRRORS) {
     const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 20000);
+    const timer = setTimeout(() => ctrl.abort(), 9000);
     try {
       const res = await fetch(url, {
         method: "POST",
