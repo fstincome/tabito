@@ -418,20 +418,47 @@ export async function fetchLiveServices(
     node(around:${radius},${pos.lat},${pos.lng})["amenity"~"restaurant|cafe|bar|bank|atm|pharmacy|hospital|fuel|police|bureau_de_change|marketplace|bus_station|taxi"];
   );out body 60;`;
 
-  const res = await fetch(OVERPASS, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: `data=${encodeURIComponent(q)}`,
-  });
-  if (!res.ok) throw new Error(`Overpass error ${res.status}`);
-  const json = (await res.json()) as {
-    elements?: Array<{
-      id: number;
-      lat: number;
-      lon: number;
-      tags?: Record<string, string>;
-    }>;
-  };
+  const body = `data=${encodeURIComponent(q)}`;
+  let json:
+    | {
+        elements?: Array<{
+          id: number;
+          lat: number;
+          lon: number;
+          tags?: Record<string, string>;
+        }>;
+      }
+    | undefined;
+  let lastError: unknown;
+
+  for (const url of OVERPASS_MIRRORS) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 20000);
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body,
+        signal: ctrl.signal,
+      });
+      if (!res.ok) throw new Error(`Overpass error ${res.status}`);
+      json = await res.json();
+      break;
+    } catch (error) {
+      lastError = error;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  if (!json) {
+    throw new Error(
+      lastError instanceof Error
+        ? lastError.message
+        : "No OpenStreetMap mirror answered",
+    );
+  }
+
 
   const out: LivePlace[] = [];
   for (const el of json.elements ?? []) {
