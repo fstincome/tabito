@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "build:static": "vite build && node scripts/make-static.mjs"
+    "build:static": "STATIC_EXPORT=1 vite build && node scripts/make-static.mjs"
   },
   "overrides": {
     "rolldown": "1.2.1"
