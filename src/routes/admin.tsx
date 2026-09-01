@@ -491,7 +491,7 @@ function Admin() {
       </section>
 
       {/* Point editor */}
-      <section className="mt-8 grid gap-6 lg:grid-cols-[1fr_1fr]">
+      <section className="mt-8 grid gap-6">
         <div className="surface p-6">
           <h2 className="font-display text-xl font-bold text-navy">
             {form.id ? "Edit point" : "New point"}
