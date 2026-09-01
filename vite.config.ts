@@ -7,7 +7,12 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
+  // Static export for cPanel (bun run build:static sets STATIC_EXPORT=1):
+  // SPA shell + no worker runtime, so dist/client is a plain HTML/JS/CSS folder.
+  // The default build (Lovable hosting) keeps the worker runtime.
+  ...(process.env["STATIC_EXPORT"] === "1" ? { nitro: false } : {}),
   tanstackStart: {
+    ...(process.env["STATIC_EXPORT"] === "1" ? { spa: { enabled: true } } : {}),
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     server: { entry: "server" },
   },
