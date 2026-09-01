@@ -7,9 +7,9 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
-  // TABITO ships as a 100% static site (no server runtime): the build produces a
-  // plain folder of HTML/JS/CSS that can be uploaded to any cPanel host.
-  nitro: false,
+  // TABITO ships as a static SPA shell (client-side only): the build's
+  // dist/client folder can be uploaded to any cPanel host (see build:static).
+  // nitro stays enabled — the published Lovable deployment needs the worker build.
   tanstackStart: {
     // Single-page-app mode: one prerendered shell, everything else client-side.
     spa: { enabled: true },
