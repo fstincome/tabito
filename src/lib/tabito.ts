@@ -408,56 +408,59 @@ const LIVE_KINDS: Record<string, string> = {
   taxi: "🚕",
 };
 
+type OverpassJson = {
+  elements?: Array<{
+    id: number;
+    lat: number;
+    lon: number;
+    tags?: Record<string, string>;
+  }>;
+};
+
+async function askMirror(url: string, query: string, ms: number): Promise<OverpassJson> {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  try {
+    // GET is a "simple" CORS request: no preflight, works on the widest set of mirrors.
+    const res = await fetch(`${url}?data=${encodeURIComponent(query)}`, {
+      signal: ctrl.signal,
+      // No credentials/custom headers → keeps the request preflight-free.
+      mode: "cors",
+      cache: "no-store",
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return (await res.json()) as OverpassJson;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 /** Tourist services around the traveller — discovered live from OpenStreetMap. */
 export async function fetchLiveServices(
   pos: LatLng,
   radius = 1200,
 ): Promise<LivePlace[]> {
-  const q = `[out:json][timeout:25];(
+  const q = `[out:json][timeout:20];(
     node(around:${radius},${pos.lat},${pos.lng})["tourism"];
     node(around:${radius},${pos.lat},${pos.lng})["amenity"~"restaurant|cafe|bar|bank|atm|pharmacy|hospital|fuel|police|bureau_de_change|marketplace|bus_station|taxi"];
   );out body 60;`;
 
-  const body = `data=${encodeURIComponent(q)}`;
-  let json:
-    | {
-        elements?: Array<{
-          id: number;
-          lat: number;
-          lon: number;
-          tags?: Record<string, string>;
-        }>;
-      }
-    | undefined;
-  let lastError: unknown;
-
-  for (const url of OVERPASS_MIRRORS) {
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 9000);
-    try {
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body,
-        signal: ctrl.signal,
-      });
-      if (!res.ok) throw new Error(`Overpass error ${res.status}`);
-      json = await res.json();
-      break;
-    } catch (error) {
-      lastError = error;
-    } finally {
-      clearTimeout(timer);
-    }
+  // Query every mirror at once and keep the first one that answers: a single
+  // blocked or overloaded mirror can no longer break the live tracker.
+  let json: OverpassJson | undefined;
+  try {
+    json = await Promise.any(OVERPASS_MIRRORS.map((url) => askMirror(url, q, 12000)));
+  } catch {
+    json = undefined;
   }
 
   if (!json) {
     throw new Error(
-      lastError instanceof Error
-        ? lastError.message
-        : "No OpenStreetMap mirror answered",
+      "no OpenStreetMap mirror answered (check your connection or try again in a moment)",
     );
   }
+
+
 
 
   const out: LivePlace[] = [];
