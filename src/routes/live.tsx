@@ -85,6 +85,17 @@ function Live() {
     }
   }, []);
 
+  // Keep the feed alive: retry every 45s while tracking, even after a failure.
+  useEffect(() => {
+    if (!tracking || !position) return;
+    const id = setInterval(() => {
+      void refreshServices(position);
+    }, 45000);
+    return () => clearInterval(id);
+  }, [tracking, position, refreshServices]);
+
+
+
 
   const startTracking = useCallback(() => {
     if (!("geolocation" in navigator)) {
