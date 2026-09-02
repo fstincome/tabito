@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { DEFAULT_HOME, loadHomeContent, saveHomeContent, type HomeContent } from "@/lib/homepage";
 import { useSession } from "@/hooks/useSession";
 import {
   ACCESS_TYPES,
@@ -96,6 +97,7 @@ function Admin() {
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [live, setLive] = useState(false);
+  const [home, setHome] = useState<HomeContent>(DEFAULT_HOME);
   const watchRef = useRef<number | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -123,6 +125,7 @@ function Admin() {
 
   useEffect(() => {
     void refresh();
+    void loadHomeContent().then(setHome).catch(() => setHome(DEFAULT_HOME));
   }, [refresh]);
 
   useEffect(() => {
@@ -416,6 +419,107 @@ function Admin() {
           {err}
         </div>
       )}
+
+      {/* Homepage editor */}
+      <section className="surface mt-8 p-6">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="font-display text-xl font-bold text-navy">Homepage content</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Edit the welcome page text shown to every TABITO visitor.
+            </p>
+          </div>
+          <button
+            onClick={async () => {
+              setBusy(true);
+              try {
+                await saveHomeContent(home);
+                flash("Homepage updated.");
+              } catch (e) {
+                fail(e);
+              } finally {
+                setBusy(false);
+              }
+            }}
+            disabled={busy}
+            className="rounded-full bg-sunset px-5 py-2.5 font-semibold text-white disabled:opacity-60"
+          >
+            {busy ? "Saving…" : "Save homepage"}
+          </button>
+        </div>
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          {([
+            ["badge", "Welcome badge"],
+            ["titleLead", "Title"],
+            ["titleHighlight", "Highlighted title"],
+            ["tagline", "Tagline"],
+            ["ctaPrimary", "Guide button"],
+            ["ctaSecondary", "Live tracker button"],
+            ["exploreHeading", "Explore section title"],
+          ] as const).map(([key, label]) => (
+            <label key={key} className="block text-xs font-bold uppercase tracking-widest text-navy">
+              {label}
+              <input
+                value={home[key]}
+                onChange={(e) => setHome((h) => ({ ...h, [key]: e.target.value }))}
+                className={FIELD}
+              />
+            </label>
+          ))}
+          <label className="block text-xs font-bold uppercase tracking-widest text-navy md:col-span-2">
+            Welcome message
+            <textarea
+              value={home.welcome}
+              onChange={(e) => setHome((h) => ({ ...h, welcome: e.target.value }))}
+              rows={5}
+              className={FIELD}
+            />
+          </label>
+          <label className="block text-xs font-bold uppercase tracking-widest text-navy md:col-span-2">
+            Explore section introduction
+            <textarea
+              value={home.exploreIntro}
+              onChange={(e) => setHome((h) => ({ ...h, exploreIntro: e.target.value }))}
+              rows={3}
+              className={FIELD}
+            />
+          </label>
+        </div>
+        <div className="mt-5 grid gap-4 md:grid-cols-3">
+          {home.features.map((feature, index) => (
+            <div key={index} className="rounded-lg bg-muted/60 p-4">
+              <p className="text-xs font-bold uppercase tracking-widest text-navy">Feature {index + 1}</p>
+              <input
+                value={feature.title}
+                onChange={(e) =>
+                  setHome((h) => ({
+                    ...h,
+                    features: h.features.map((f, i) =>
+                      i === index ? { ...f, title: e.target.value } : f,
+                    ),
+                  }))
+                }
+                className={FIELD}
+                aria-label={`Feature ${index + 1} title`}
+              />
+              <textarea
+                value={feature.text}
+                onChange={(e) =>
+                  setHome((h) => ({
+                    ...h,
+                    features: h.features.map((f, i) =>
+                      i === index ? { ...f, text: e.target.value } : f,
+                    ),
+                  }))
+                }
+                rows={4}
+                className={FIELD}
+                aria-label={`Feature ${index + 1} description`}
+              />
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* Categories */}
       <section className="surface mt-8 p-6">
