@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Home, LayoutDashboard, MapPinned, Tags, Users } from "lucide-react";
+import { Home, MapPinned, Tags, Users } from "lucide-react";
 import { DEFAULT_HOME, loadHomeContent, saveHomeContent, type HomeContent } from "@/lib/homepage";
 import { useSession } from "@/hooks/useSession";
 import {
