@@ -1015,6 +1015,7 @@ function Admin() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Team */}
       {tab === "team" && isAdmin && (
