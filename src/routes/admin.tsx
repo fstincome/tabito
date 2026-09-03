@@ -1017,7 +1017,7 @@ function Admin() {
       </section>
 
       {/* Team */}
-      {isAdmin && (
+      {tab === "team" && isAdmin && (
         <section className="surface mt-8 p-6">
           <h2 className="font-display text-xl font-bold text-navy">Team accounts</h2>
           <p className="mt-1 text-sm text-muted-foreground">
