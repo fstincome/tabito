@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Home, MapPinned, Tags, Users } from "lucide-react";
 import { DEFAULT_HOME, loadHomeContent, saveHomeContent, type HomeContent } from "@/lib/homepage";
 import { useSession } from "@/hooks/useSession";
 import {
@@ -98,6 +99,7 @@ function Admin() {
   const [err, setErr] = useState<string | null>(null);
   const [live, setLive] = useState(false);
   const [home, setHome] = useState<HomeContent>(DEFAULT_HOME);
+  const [tab, setTab] = useState<"home" | "categories" | "points" | "team">("home");
   const watchRef = useRef<number | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -420,7 +422,32 @@ function Admin() {
         </div>
       )}
 
+      <nav aria-label="Admin sections" className="surface mt-8 overflow-x-auto p-2">
+        <div className="flex min-w-max gap-1">
+          {[
+            { id: "home" as const, label: "Homepage", icon: Home },
+            { id: "categories" as const, label: "Categories", icon: Tags },
+            { id: "points" as const, label: "Published points", icon: MapPinned },
+            ...(isAdmin ? [{ id: "team" as const, label: "Team", icon: Users }] : []),
+          ].map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setTab(id)}
+              aria-current={tab === id ? "page" : undefined}
+              className={`flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-bold transition-colors ${
+                tab === id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`}
+            >
+              <Icon className="size-4" aria-hidden="true" />
+              {label}
+            </button>
+          ))}
+        </div>
+      </nav>
+
       {/* Homepage editor */}
+      {tab === "home" && (
       <section className="surface mt-8 p-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -520,8 +547,10 @@ function Admin() {
           ))}
         </div>
       </section>
+      )}
 
       {/* Categories */}
+      {tab === "categories" && (
       <section className="surface mt-8 p-6">
         <h2 className="font-display text-xl font-bold text-navy">Categories</h2>
         <div className="mt-4 flex flex-wrap gap-2">
@@ -593,8 +622,10 @@ function Admin() {
           travellers move, so no points are added to it by hand.
         </p>
       </section>
+      )}
 
       {/* Point editor */}
+      {tab === "points" && (
       <section className="mt-8 grid gap-6">
         <div className="surface p-6">
           <h2 className="font-display text-xl font-bold text-navy">
@@ -1015,9 +1046,10 @@ function Admin() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Team */}
-      {isAdmin && (
+      {tab === "team" && isAdmin && (
         <section className="surface mt-8 p-6">
           <h2 className="font-display text-xl font-bold text-navy">Team accounts</h2>
           <p className="mt-1 text-sm text-muted-foreground">
