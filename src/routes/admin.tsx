@@ -595,6 +595,7 @@ function Admin() {
       </section>
 
       {/* Point editor */}
+      {tab === "points" && (
       <section className="mt-8 grid gap-6">
         <div className="surface p-6">
           <h2 className="font-display text-xl font-bold text-navy">
