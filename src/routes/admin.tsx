@@ -593,6 +593,7 @@ function Admin() {
           travellers move, so no points are added to it by hand.
         </p>
       </section>
+      )}
 
       {/* Point editor */}
       {tab === "points" && (
