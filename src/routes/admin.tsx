@@ -142,10 +142,24 @@ function Admin() {
     void loadHomeContent().then(setHome).catch(() => setHome(DEFAULT_HOME));
   }, [refresh]);
 
+  const refreshMessages = useCallback(async () => {
+    try {
+      setMessages(await loadMessages());
+    } catch {
+      setMessages([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isStaff) return;
+    void refreshMessages();
+  }, [isStaff, refreshMessages]);
+
   useEffect(() => {
     if (!isAdmin) return;
     void loadStaff().then(setStaff).catch(() => setStaff([]));
   }, [isAdmin, msg]);
+
 
   useEffect(
     () => () => {
