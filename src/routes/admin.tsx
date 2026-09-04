@@ -1076,8 +1076,137 @@ function Admin() {
       </section>
       )}
 
+      {/* Inbox */}
+      {tab === "messages" && (
+        <section className="surface mt-8 p-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="font-display text-xl font-bold text-navy">Inbox</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Messages sent from the TABITO welcome page. Reply opens your own mail app.
+              </p>
+            </div>
+            <button
+              onClick={() => void refreshMessages()}
+              className="rounded-full bg-muted px-4 py-2 text-sm font-semibold"
+            >
+              Refresh
+            </button>
+          </div>
+
+          <ul className="mt-5 space-y-3">
+            {messages.map((m) => (
+              <li key={m.id} className="rounded-xl bg-muted/60 p-4">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-navy">{m.subject}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {m.name} · {m.email}
+                      {m.phone ? ` · ${m.phone}` : ""} ·{" "}
+                      {new Date(m.createdAt).toLocaleString()}
+                    </p>
+                  </div>
+                  <span
+                    className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${
+                      m.status === "new"
+                        ? "bg-sunset text-white"
+                        : m.status === "read"
+                          ? "bg-lagoon/25 text-lagoon-deep"
+                          : "bg-palm/25 text-navy"
+                    }`}
+                  >
+                    {m.status}
+                  </span>
+                </div>
+
+                <p className="mt-3 whitespace-pre-wrap text-sm">{m.body}</p>
+
+                <textarea
+                  className="mt-3 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                  rows={2}
+                  placeholder="Internal note (team only)"
+                  value={noteDraft[m.id] ?? m.internalNote ?? ""}
+                  onChange={(e) =>
+                    setNoteDraft((d) => ({ ...d, [m.id]: e.target.value }))
+                  }
+                />
+
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <a
+                    href={replyMailto(m)}
+                    className="rounded-full bg-navy px-4 py-2 text-xs font-semibold text-white"
+                  >
+                    Reply by email
+                  </a>
+                  <button
+                    onClick={async () => {
+                      try {
+                        await setMessageStatus(m.id, m.status === "handled" ? "read" : "handled");
+                        await refreshMessages();
+                      } catch (e) {
+                        fail(e);
+                      }
+                    }}
+                    className="rounded-full bg-card px-4 py-2 text-xs font-semibold text-navy"
+                  >
+                    {m.status === "handled" ? "Reopen" : "Mark handled"}
+                  </button>
+                  {m.status === "new" && (
+                    <button
+                      onClick={async () => {
+                        try {
+                          await setMessageStatus(m.id, "read");
+                          await refreshMessages();
+                        } catch (e) {
+                          fail(e);
+                        }
+                      }}
+                      className="rounded-full bg-card px-4 py-2 text-xs font-semibold text-navy"
+                    >
+                      Mark read
+                    </button>
+                  )}
+                  <button
+                    onClick={async () => {
+                      try {
+                        await saveMessageNote(m.id, noteDraft[m.id] ?? m.internalNote ?? "");
+                        await refreshMessages();
+                        flash("Note saved.");
+                      } catch (e) {
+                        fail(e);
+                      }
+                    }}
+                    className="rounded-full bg-card px-4 py-2 text-xs font-semibold text-navy"
+                  >
+                    Save note
+                  </button>
+                  <button
+                    onClick={async () => {
+                      if (!confirm("Delete this message?")) return;
+                      try {
+                        await deleteMessage(m.id);
+                        await refreshMessages();
+                      } catch (e) {
+                        fail(e);
+                      }
+                    }}
+                    className="rounded-full bg-destructive/10 px-4 py-2 text-xs font-semibold text-destructive"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </li>
+            ))}
+            {messages.length === 0 && (
+              <li className="text-sm text-muted-foreground">No messages yet.</li>
+            )}
+          </ul>
+        </section>
+      )}
+
       {/* Team */}
       {tab === "team" && isAdmin && (
+
         <section className="surface mt-8 p-6">
           <h2 className="font-display text-xl font-bold text-navy">Team accounts</h2>
           <p className="mt-1 text-sm text-muted-foreground">
