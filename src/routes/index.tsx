@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { loadCategories, loadPoints, type Category } from "@/lib/tabito";
 import { DEFAULT_HOME, loadHomeContent, type HomeContent } from "@/lib/homepage";
+import { ContactForm } from "@/components/ContactForm";
+
 
 export const Route = createFileRoute("/")({
   component: Welcome,
@@ -133,6 +135,11 @@ function Welcome() {
           ))}
         </div>
       </section>
+
+      <section id="contact" className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
+        <ContactForm />
+      </section>
+
     </div>
   );
 }
