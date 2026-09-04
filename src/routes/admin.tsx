@@ -108,7 +108,10 @@ function Admin() {
   const [err, setErr] = useState<string | null>(null);
   const [live, setLive] = useState(false);
   const [home, setHome] = useState<HomeContent>(DEFAULT_HOME);
-  const [tab, setTab] = useState<"home" | "categories" | "points" | "team">("home");
+  const [tab, setTab] = useState<"home" | "categories" | "points" | "messages" | "team">("home");
+  const [messages, setMessages] = useState<ContactMessage[]>([]);
+  const [noteDraft, setNoteDraft] = useState<Record<string, string>>({});
+
   const watchRef = useRef<number | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -437,6 +440,8 @@ function Admin() {
             { id: "home" as const, label: "Homepage", icon: Home },
             { id: "categories" as const, label: "Categories", icon: Tags },
             { id: "points" as const, label: "Published points", icon: MapPinned },
+            { id: "messages" as const, label: "Inbox", icon: Inbox },
+
             ...(isAdmin ? [{ id: "team" as const, label: "Team", icon: Users }] : []),
           ].map(({ id, label, icon: Icon }) => (
             <button
