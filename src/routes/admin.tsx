@@ -1,6 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Home, MapPinned, Tags, Users } from "lucide-react";
+import { Home, Inbox, MapPinned, Tags, Users } from "lucide-react";
+import {
+  deleteMessage,
+  loadMessages,
+  replyMailto,
+  saveMessageNote,
+  setMessageStatus,
+  type ContactMessage,
+} from "@/lib/messages";
+
 import { DEFAULT_HOME, loadHomeContent, saveHomeContent, type HomeContent } from "@/lib/homepage";
 import { useSession } from "@/hooks/useSession";
 import {
