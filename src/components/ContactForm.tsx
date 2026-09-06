@@ -36,14 +36,14 @@ export function ContactForm() {
         }
       }}
     >
-      <h2 className="font-display text-2xl font-bold text-navy">Write to TABITO</h2>
+      <h2 className="font-display text-2xl font-bold text-navy">Write to TABITO travel</h2>
       <p className="mt-2 text-sm text-muted-foreground">
         Ask about a tour, a site or a booking. Our team answers by email.
       </p>
 
       {sent && (
         <div className="mt-5 rounded-xl border border-palm/40 bg-palm/15 p-3 text-sm">
-          Thank you — your message reached the TABITO desk. We will reply to you by email.
+          Thank you — your message reached the TABITO travel desk. We will reply to you by email.
         </div>
       )}
       {err && (

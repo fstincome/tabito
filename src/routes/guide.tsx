@@ -18,13 +18,13 @@ export const Route = createFileRoute("/guide")({
   component: Guide,
   head: () => ({
     meta: [
-      { title: "TABITO Guide — Attractions, Monuments & Cultural Sites" },
+      { title: "TABITO travel Guide — Attractions, Monuments & Cultural Sites" },
       {
         name: "description",
         content:
           "Browse the TABITO travel guide: tourist attractions, historical monuments, cultural centres, bus stations and flight ticket offices, each with photos and descriptions.",
       },
-      { property: "og:title", content: "TABITO Guide — Places worth travelling for" },
+      { property: "og:title", content: "TABITO travel Guide — Places worth travelling for" },
       {
         property: "og:description",
         content:
@@ -62,7 +62,7 @@ function Guide() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
       <h1 className="font-display text-3xl font-extrabold text-navy sm:text-4xl">
-        The TABITO Guide
+        The TABITO travel Guide
       </h1>
       <p className="mt-2 max-w-2xl text-muted-foreground">
         Places our guides recommend, with photos and what actually happens there.

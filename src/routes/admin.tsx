@@ -39,13 +39,13 @@ export const Route = createFileRoute("/admin")({
   component: Admin,
   head: () => ({
     meta: [
-      { title: "TABITO Admin — Manage categories and tourist points" },
+      { title: "TABITO travel Admin — Manage categories and tourist points" },
       {
         name: "description",
         content:
-          "TABITO administration desk: create categories, capture coordinates live or by hand, and publish tourist points with up to five photos and a description.",
+          "TABITO travel administration desk: create categories, capture coordinates live or by hand, and publish tourist points with up to five photos and a description.",
       },
-      { property: "og:title", content: "TABITO Admin Desk" },
+      { property: "og:title", content: "TABITO travel Admin Desk" },
       {
         property: "og:description",
         content: "Manage the TABITO travel guide content: categories, points, photos.",
@@ -333,7 +333,7 @@ function Admin() {
             {mode === "signin" ? "Staff sign in" : "Create a staff account"}
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            TABITO staff accounts manage categories and publish tourist points.
+            TABITO travel staff accounts manage categories and publish tourist points.
           </p>
 
           {mode === "signup" && (
@@ -405,7 +405,7 @@ function Admin() {
           <h1 className="font-display text-2xl font-bold text-navy">Waiting for access</h1>
           <p className="mt-3 text-sm text-muted-foreground">
             You are signed in as <strong>{user.email}</strong>, but no role has been
-            granted yet. A TABITO admin must give you editor or admin rights.
+            granted yet. A TABITO travel admin must give you editor or admin rights.
           </p>
           <button
             onClick={() => void signOut()}
@@ -481,7 +481,7 @@ function Admin() {
           <div>
             <h2 className="font-display text-xl font-bold text-navy">Homepage content</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Edit the welcome page text shown to every TABITO visitor.
+              Edit the welcome page text shown to every TABITO travel visitor.
             </p>
           </div>
           <button

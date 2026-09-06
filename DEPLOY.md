@@ -1,4 +1,4 @@
-# TABITO — Static deployment on cPanel
+# TABITO travel — Static deployment on cPanel
 
 The app has **no server runtime** (no Nitro, no Node process). Everything runs in the browser
 and the guide content is stored on the device (with JSON export/import for backup and transfer).
