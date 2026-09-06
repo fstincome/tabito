@@ -1,6 +1,6 @@
-# TABITO Explorer Guide
+# TABITO travel — Tanganyika e-Bridge International Tours
 
-Guide touristique numérique pour **TABITO** (*Tanganyika e-Bridge International Tours*), tour opérateur basé au Burundi. L'application présente les sites, attractions et services touristiques aux voyageurs, avec un back-office administratif pour gérer le contenu.
+Guide touristique numérique officiel de **TABITO travel** (*Tanganyika e-Bridge International Tours*), tour opérateur basé au Burundi. L'application présente les sites, attractions et services touristiques aux voyageurs, avec un back-office administratif pour gérer le contenu.
 
 **Live app** : https://tabito.lovable.app
 

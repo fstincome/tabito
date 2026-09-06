@@ -9,13 +9,13 @@ export const Route = createFileRoute("/")({
   component: Welcome,
   head: () => ({
     meta: [
-      { title: "TABITO Travel Guide — Welcome to Tanganyika e-Bridge Tours" },
+      { title: "TABITO travel — Welcome to Tanganyika e-Bridge Tours" },
       {
         name: "description",
         content:
-          "Welcome to TABITO. Explore attractions, historical monuments, cultural centres, bus stations and flight ticket offices with a live GPS travel companion.",
+          "Welcome to TABITO travel. Explore attractions, historical monuments, cultural centres, bus stations and flight ticket offices with a live GPS travel companion.",
       },
-      { property: "og:title", content: "Welcome to TABITO Tours" },
+      { property: "og:title", content: "Welcome to TABITO travel" },
       {
         property: "og:description",
         content:
@@ -81,7 +81,7 @@ function Welcome() {
             <div className="absolute inset-0 -z-0 rounded-full bg-lagoon/25 blur-3xl" />
             <img
               src="/tabito-logo.png"
-              alt="TABITO — Tanganyika e-Bridge International Tours logo"
+              alt="TABITO travel logo"
               className="relative z-10 w-full rounded-3xl bg-white/95 p-4 shadow-sea"
             />
           </div>

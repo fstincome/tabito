@@ -19,7 +19,7 @@ export type HomeContent = {
 export const DEFAULT_HOME: HomeContent = {
   badge: "Karibu · Welcome",
   titleLead: "A word of welcome from",
-  titleHighlight: "TABITO",
+  titleHighlight: "TABITO travel",
   welcome:
     "We are Tanganyika e-Bridge International Tours. From the shores of Lake Tanganyika to every corner of the region, our mission is simple: to be the bridge between you and the places, people and stories worth travelling for. This guide gathers our curated attractions, historic monuments, cultural houses, road stations and flight ticket desks — and walks beside you, live, while you travel.",
   tagline: "Travel well, travel curious. Our team is with you at every stop.",
@@ -27,7 +27,7 @@ export const DEFAULT_HOME: HomeContent = {
   ctaSecondary: "Start live tracking",
   exploreHeading: "What you can explore",
   exploreIntro:
-    "Every category below is maintained by the TABITO team. Tourist services appear automatically around you as you travel — they are never added by hand.",
+    "Every category below is maintained by the TABITO travel team. Tourist services appear automatically around you as you travel — they are never added by hand.",
   features: [
     {
       title: "Curated by our guides",
@@ -35,7 +35,7 @@ export const DEFAULT_HOME: HomeContent = {
     },
     {
       title: "Live companion",
-      text: "Turn on GPS and TABITO alerts you when a listed site is within your chosen radius.",
+      text: "Turn on GPS and TABITO travel alerts you when a listed site is within your chosen radius.",
     },
     {
       title: "Works offline",

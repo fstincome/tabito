@@ -18,13 +18,13 @@ export const Route = createFileRoute("/live")({
   component: Live,
   head: () => ({
     meta: [
-      { title: "TABITO Live Tracker — Tourist services around you" },
+      { title: "TABITO travel Live Tracker — Tourist services around you" },
       {
         name: "description",
         content:
-          "Turn on GPS and let TABITO alert you when a listed site or a tourist service is within your chosen radius while you travel.",
+          "Turn on GPS and let TABITO travel alert you when a listed site or a tourist service is within your chosen radius while you travel.",
       },
-      { property: "og:title", content: "TABITO Live Tracker" },
+      { property: "og:title", content: "TABITO travel Live Tracker" },
       {
         property: "og:description",
         content:
@@ -223,7 +223,7 @@ function Live() {
         Live tracker
       </h1>
       <p className="mt-2 max-w-2xl text-muted-foreground">
-        TABITO walks with you: our published points plus the tourist services detected
+        TABITO travel walks with you: our published points plus the tourist services detected
         around your position.
       </p>
 
