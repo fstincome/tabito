@@ -1,41 +1,88 @@
-# Tabito Explorer Guide
+# TABITO Explorer Guide
 
-Je veux personnaliser cette application a une TOUR OPERATEUR nommé TABITO (Tanganyika e-Bridge international Tours), tu vas donc adapter cela a une app guide touristique complet avec un mot de bienvenu de tabito. Il sera en anglais, avec les couleurs dominant du bleu marine et les autres cfr le logo.
+Guide touristique numérique pour **TABITO** (*Tanganyika e-Bridge International Tours*), tour opérateur basé au Burundi. L'application présente les sites, attractions et services touristiques aux voyageurs, avec un back-office administratif pour gérer le contenu.
 
-Cette fois-ci un administrateur pourra ajouter les categories, puis inserer manuellement les coordonnees. Il peut tracker live s'il est la ou en ecrire manuellement les coordonees, il doit ajouter les images allant a 5 sur chaque point et une description de se qui s'y fasse. 
+**Live app** : https://tabito.lovable.app
 
-Evite que cela utilise encore nitro, je veux une app que je peux builder et avoir un dist a heberger sur n'importe que cpanel statiquement.
+## Fonctionnalités
 
-Voici les options qui devraient apparaitre, tout en gardant le tracking existant (ce que nous avons nommé services touristiques) que normalement on n'ajoute pas, ils sont la selon le passage.
+- **Accueil personnalisable** : bannière, titre, message de bienvenue, accroche et appels à l'action modifiables depuis l'admin.
+- **Guide touristique** : exploration par catégories avec fiches détaillées (photos, description, accès, distances, contacts, etc.).
+- **Catégories officielles** :
+  - Services touristiques (découverte live OpenStreetMap)
+  - Attractions / sites touristiques
+  - Monuments historiques
+  - Produits culturels
+  - Gares routières / points de départ-arrivée
+  - Bureaux de vente de tickets d'avion
+- **Tracker live** : affichage des services touristiques autour de la position GPS du voyageur, rafraîchi automatiquement.
+- **Admin CMS** : authentification par email/mot de passe, gestion des catégories, publication des points, édition de la page d'accueil, boîte de réception des messages, gestion de l'équipe (rôles admin/éditeur).
+- **Formulaire de contact** : messages stockés dans la base de données, consultables depuis l'admin.
+- **PWA** : manifeste et popup d'installation pour ajouter l'application sur l'écran d'accueil.
+- **Export statique** : génère un dossier `static/` prêt à être hébergé sur n'importe quel hébergement cPanel classique.
 
--Services touristiques (L'existant)
--Attractions /Sites touristiques
--Monuments historiques
--Produits culturels (Centres touristiques,...)
--Gards routiers (Points d'arrivee/depart des agences de voyages)
--Bureau de vente de tickets d'avion
+## Spécifications d'un point touristique
 
-Cette app devra etre unique a TABITO et colore de leur marque
+Chaque point publié peut contenir :
 
-This project was built with [Lovable](https://lovable.dev).
+- Nom du site
+- Région / destination locale
+- Municipalité
+- Administration, gestion ou propriété du site
+- Coordonnées géographiques (GPS ou saisie manuelle)
+- Type d'accès : route, maritime ou aérienne
+- Indications pour l'accès
+- Distance depuis le chef-lieu de la destination (km / heures)
+- Distance depuis Bujumbura (km / heures)
+- Code / grade du site
+- Récit narratif général
+- Récit narratif saisonnier
+- Jusqu'à 5 photos compressées
+- Lien vidéo / réseaux sociaux / site web
+- Code marchand (gestion TABITO)
+- Interdits et précautions spécifiques
+- Présence de capteurs météorologiques
+- Heures d'ouverture et de fermeture
+- Contacts des guides locaux / secourisme / assistance médicale
 
-**Live app**: https://tabito.lovable.app
+## Stack technique
 
-## Build with Lovable
+- [TanStack Start](https://tanstack.com/start) + React + TypeScript
+- [Tailwind CSS](https://tailwindcss.com) v4
+- [Leaflet](https://leafletjs.com) + OpenStreetMap
+- [Supabase](https://supabase.com) (Lovable Cloud) — auth, base de données, RLS
+- Build statique personnalisé via `scripts/make-static.mjs`
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/c92639e8-2303-4f00-90fa-c09a353c7134).
+## Scripts
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+```sh
+# Lancer le serveur de développement
+bun run dev
 
-## Development
+# Build standard (preview Lovable)
+bun run build
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+# Build statique pour hébergement cPanel
+bun run build:static
+```
+
+Après `bun run build:static`, le dossier `static/` contient l'application prête à être uploadée sur votre hébergement.
+
+## Déploiement cPanel
+
+1. Exécutez `bun run build:static`.
+2. Uploadez le contenu du dossier `static/` à la racine de votre domaine cPanel.
+3. Le fichier `.htaccess` inclus gère la redirection SPA vers `index.html`.
+
+## Développement local
 
 ```sh
 git clone <this-repository-url>
 cd <repository-name>
-npm i
-npm run dev
+bun install
+bun run dev
 ```
+
+---
+
+Projet construit avec [Lovable](https://lovable.dev).
