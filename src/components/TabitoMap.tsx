@@ -148,7 +148,7 @@ export function TabitoMap({
       renderLayers(L);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [markers, position, radius]);
+  }, [markers, position, radius, path]);
 
   useEffect(() => {
     if (mapRef.current && position) {
