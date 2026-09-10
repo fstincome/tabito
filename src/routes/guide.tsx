@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { TabitoMap } from "@/components/TabitoMap";
+import { WeatherPanel } from "@/components/WeatherPanel";
 import {
   ACCESS_TYPES,
   loadCategories,
@@ -305,9 +306,12 @@ function Guide() {
               </a>
             )}
 
-            <p className="mt-4 font-mono text-xs text-muted-foreground">
-              {open.lat.toFixed(5)}, {open.lng.toFixed(5)}
-            </p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-[auto_1fr] sm:items-start">
+              <p className="font-mono text-xs text-muted-foreground">
+                {open.lat.toFixed(5)}, {open.lng.toFixed(5)}
+              </p>
+              <WeatherPanel lat={open.lat} lng={open.lng} />
+            </div>
             <a
               href={`https://www.openstreetmap.org/?mlat=${open.lat}&mlon=${open.lng}#map=17/${open.lat}/${open.lng}`}
               target="_blank"

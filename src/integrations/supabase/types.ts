@@ -226,6 +226,98 @@ export type Database = {
         }
         Relationships: []
       }
+      trip_positions: {
+        Row: {
+          accuracy: number | null
+          created_at: string
+          id: string
+          lat: number
+          lng: number
+          recorded_at: string
+          trip_id: string
+        }
+        Insert: {
+          accuracy?: number | null
+          created_at?: string
+          id?: string
+          lat: number
+          lng: number
+          recorded_at?: string
+          trip_id: string
+        }
+        Update: {
+          accuracy?: number | null
+          created_at?: string
+          id?: string
+          lat?: number
+          lng?: number
+          recorded_at?: string
+          trip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_positions_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trips: {
+        Row: {
+          created_at: string
+          distance_m: number
+          end_label: string | null
+          end_lat: number | null
+          end_lng: number | null
+          ended_at: string | null
+          id: string
+          is_active: boolean
+          note: string | null
+          start_label: string | null
+          start_lat: number
+          start_lng: number
+          started_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          distance_m?: number
+          end_label?: string | null
+          end_lat?: number | null
+          end_lng?: number | null
+          ended_at?: string | null
+          id?: string
+          is_active?: boolean
+          note?: string | null
+          start_label?: string | null
+          start_lat: number
+          start_lng: number
+          started_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          distance_m?: number
+          end_label?: string | null
+          end_lat?: number | null
+          end_lng?: number | null
+          ended_at?: string | null
+          id?: string
+          is_active?: boolean
+          note?: string | null
+          start_label?: string | null
+          start_lat?: number
+          start_lng?: number
+          started_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

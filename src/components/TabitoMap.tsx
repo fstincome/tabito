@@ -17,6 +17,8 @@ interface Props {
   height?: number;
   onPick?: (pos: LatLng) => void;
   className?: string;
+  /** Optional circuit polyline (recorded trip). */
+  path?: LatLng[];
 }
 
 export function TabitoMap({
@@ -26,6 +28,7 @@ export function TabitoMap({
   height = 380,
   onPick,
   className,
+  path,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<import("leaflet").Map | null>(null);
@@ -104,6 +107,38 @@ export function TabitoMap({
         .bindPopup(`<strong>${m.name}</strong>`)
         .addTo(layer);
     }
+
+    if (path && path.length > 1) {
+      const line = L.polyline(
+        path.map((p) => [p.lat, p.lng] as [number, number]),
+        { color: "#f97316", weight: 4, opacity: 0.9 },
+      ).addTo(layer);
+      const first = path[0]!;
+      const last = path[path.length - 1]!;
+      L.circleMarker([first.lat, first.lng], {
+        radius: 7,
+        color: "#0b1f3a",
+        weight: 3,
+        fillColor: "#22c55e",
+        fillOpacity: 1,
+      })
+        .bindTooltip("Departure")
+        .addTo(layer);
+      L.circleMarker([last.lat, last.lng], {
+        radius: 7,
+        color: "#0b1f3a",
+        weight: 3,
+        fillColor: "#ef4444",
+        fillOpacity: 1,
+      })
+        .bindTooltip("Arrival")
+        .addTo(layer);
+      try {
+        map.fitBounds(line.getBounds().pad(0.2));
+      } catch {
+        /* ignore */
+      }
+    }
   }
 
   useEffect(() => {
@@ -113,12 +148,13 @@ export function TabitoMap({
       renderLayers(L);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [markers, position, radius]);
+  }, [markers, position, radius, path]);
 
   useEffect(() => {
-    if (mapRef.current && position) {
+    if (mapRef.current && position && !(path && path.length > 1)) {
       mapRef.current.panTo([position.lat, position.lng]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [position]);
 
   return (
