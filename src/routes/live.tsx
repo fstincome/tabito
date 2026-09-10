@@ -1,6 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TabitoMap } from "@/components/TabitoMap";
+import { WeatherPanel } from "@/components/WeatherPanel";
+import { useSession } from "@/hooks/useSession";
+import {
+  SAMPLE_M,
+  SAMPLE_MS,
+  appendPosition,
+  closeStaleTrips,
+  endTrip,
+  formatDuration,
+  startTrip,
+} from "@/lib/tracking";
 import { distanceMeters, formatDistance, type LatLng } from "@/lib/geo";
 import {
   fetchLiveServices,
