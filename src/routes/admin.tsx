@@ -711,6 +711,11 @@ function Admin() {
               className="rounded-lg border border-input bg-background px-3 py-2.5 font-mono text-sm"
             />
           </div>
+          <WeatherPanel
+            lat={Number.isFinite(Number(form.lat)) && form.lat ? Number(form.lat) : null}
+            lng={Number.isFinite(Number(form.lng)) && form.lng ? Number(form.lng) : null}
+            className="mt-3"
+          />
           <div className="mt-3 flex flex-wrap gap-2">
             <button
               onClick={toggleLive}

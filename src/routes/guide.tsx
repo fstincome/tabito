@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { TabitoMap } from "@/components/TabitoMap";
+import { WeatherPanel } from "@/components/WeatherPanel";
 import {
   ACCESS_TYPES,
   loadCategories,
