@@ -107,6 +107,38 @@ export function TabitoMap({
         .bindPopup(`<strong>${m.name}</strong>`)
         .addTo(layer);
     }
+
+    if (path && path.length > 1) {
+      const line = L.polyline(
+        path.map((p) => [p.lat, p.lng] as [number, number]),
+        { color: "#f97316", weight: 4, opacity: 0.9 },
+      ).addTo(layer);
+      const first = path[0]!;
+      const last = path[path.length - 1]!;
+      L.circleMarker([first.lat, first.lng], {
+        radius: 7,
+        color: "#0b1f3a",
+        weight: 3,
+        fillColor: "#22c55e",
+        fillOpacity: 1,
+      })
+        .bindTooltip("Departure")
+        .addTo(layer);
+      L.circleMarker([last.lat, last.lng], {
+        radius: 7,
+        color: "#0b1f3a",
+        weight: 3,
+        fillColor: "#ef4444",
+        fillOpacity: 1,
+      })
+        .bindTooltip("Arrival")
+        .addTo(layer);
+      try {
+        map.fitBounds(line.getBounds().pad(0.2));
+      } catch {
+        /* ignore */
+      }
+    }
   }
 
   useEffect(() => {
