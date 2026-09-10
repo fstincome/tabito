@@ -17,6 +17,8 @@ interface Props {
   height?: number;
   onPick?: (pos: LatLng) => void;
   className?: string;
+  /** Optional circuit polyline (recorded trip). */
+  path?: LatLng[];
 }
 
 export function TabitoMap({
@@ -26,6 +28,7 @@ export function TabitoMap({
   height = 380,
   onPick,
   className,
+  path,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<import("leaflet").Map | null>(null);
