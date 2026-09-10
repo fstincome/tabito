@@ -151,9 +151,10 @@ export function TabitoMap({
   }, [markers, position, radius, path]);
 
   useEffect(() => {
-    if (mapRef.current && position) {
+    if (mapRef.current && position && !(path && path.length > 1)) {
       mapRef.current.panTo([position.lat, position.lng]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [position]);
 
   return (
