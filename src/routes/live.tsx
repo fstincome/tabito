@@ -119,6 +119,33 @@ function Live() {
 
 
 
+  // Elapsed-time ticker while a trip is recording.
+  useEffect(() => {
+    if (!tripStartedAt) return;
+    const id = setInterval(() => setTick((t) => t + 1), 30000);
+    return () => clearInterval(id);
+  }, [tripStartedAt]);
+
+  const recordSample = useCallback((next: LatLng, acc: number | null) => {
+    const id = tripIdRef.current;
+    if (!id) return;
+    const prev = lastPosRef.current;
+    if (prev) tripDistanceRef.current += distanceMeters(prev, next);
+    lastPosRef.current = next;
+
+    const last = lastSampleRef.current;
+    const movedEnough = !last || distanceMeters(last.pos, next) >= SAMPLE_M;
+    const waitedEnough = !last || Date.now() - last.at >= SAMPLE_MS;
+    if (!movedEnough && !waitedEnough) return;
+
+    lastSampleRef.current = { pos: next, at: Date.now() };
+    setTripDistance(tripDistanceRef.current);
+    setTripPath((prevPath) => [...prevPath, next]);
+    void appendPosition(id, next, acc, tripDistanceRef.current).catch(() => {
+      /* keep tracking even if a sample fails */
+    });
+  }, []);
+
   const startTracking = useCallback(() => {
     if (!("geolocation" in navigator)) {
       setError("Geolocation is not supported on this device.");
@@ -129,6 +156,7 @@ function Live() {
       const next = { lat: p.coords.latitude, lng: p.coords.longitude };
       setPosition(next);
       setAccuracy(p.coords.accuracy);
+      recordSample(next, p.coords.accuracy ?? null);
       const last = lastFetchRef.current;
       if (!last || distanceMeters(last, next) > REFRESH_DISTANCE) refreshServices(next);
     };
