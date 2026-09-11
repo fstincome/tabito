@@ -376,6 +376,7 @@ function Live() {
               lat: p.lat,
               lng: p.lng,
             }))}
+            path={tripPath.length > 1 ? tripPath : undefined}
             height={420}
           />
 
