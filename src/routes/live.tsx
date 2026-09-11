@@ -62,9 +62,20 @@ function Live() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
 
+  const [tripId, setTripId] = useState<string | null>(null);
+  const [tripStartedAt, setTripStartedAt] = useState<string | null>(null);
+  const [tripDistance, setTripDistance] = useState(0);
+  const [tripPath, setTripPath] = useState<LatLng[]>([]);
+  const [tick, setTick] = useState(0);
+
   const watchRef = useRef<number | null>(null);
   const lastFetchRef = useRef<LatLng | null>(null);
   const alertedRef = useRef<Record<string, number>>({});
+  const tripIdRef = useRef<string | null>(null);
+  const lastSampleRef = useRef<{ pos: LatLng; at: number } | null>(null);
+  const tripDistanceRef = useRef(0);
+  const lastPosRef = useRef<LatLng | null>(null);
+  const { user, isStaff } = useSession();
 
   useEffect(() => {
     void loadPoints().then(setPoints).catch(() => setPoints([]));
@@ -108,6 +119,33 @@ function Live() {
 
 
 
+  // Elapsed-time ticker while a trip is recording.
+  useEffect(() => {
+    if (!tripStartedAt) return;
+    const id = setInterval(() => setTick((t) => t + 1), 30000);
+    return () => clearInterval(id);
+  }, [tripStartedAt]);
+
+  const recordSample = useCallback((next: LatLng, acc: number | null) => {
+    const id = tripIdRef.current;
+    if (!id) return;
+    const prev = lastPosRef.current;
+    if (prev) tripDistanceRef.current += distanceMeters(prev, next);
+    lastPosRef.current = next;
+
+    const last = lastSampleRef.current;
+    const movedEnough = !last || distanceMeters(last.pos, next) >= SAMPLE_M;
+    const waitedEnough = !last || Date.now() - last.at >= SAMPLE_MS;
+    if (!movedEnough && !waitedEnough) return;
+
+    lastSampleRef.current = { pos: next, at: Date.now() };
+    setTripDistance(tripDistanceRef.current);
+    setTripPath((prevPath) => [...prevPath, next]);
+    void appendPosition(id, next, acc, tripDistanceRef.current).catch(() => {
+      /* keep tracking even if a sample fails */
+    });
+  }, []);
+
   const startTracking = useCallback(() => {
     if (!("geolocation" in navigator)) {
       setError("Geolocation is not supported on this device.");
@@ -118,6 +156,7 @@ function Live() {
       const next = { lat: p.coords.latitude, lng: p.coords.longitude };
       setPosition(next);
       setAccuracy(p.coords.accuracy);
+      recordSample(next, p.coords.accuracy ?? null);
       const last = lastFetchRef.current;
       if (!last || distanceMeters(last, next) > REFRESH_DISTANCE) refreshServices(next);
     };
@@ -134,6 +173,24 @@ function Live() {
     navigator.geolocation.getCurrentPosition(
       (p) => {
         setTracking(true);
+        const first = { lat: p.coords.latitude, lng: p.coords.longitude };
+        if (user && isStaff && !tripIdRef.current) {
+          tripDistanceRef.current = 0;
+          lastPosRef.current = first;
+          lastSampleRef.current = { pos: first, at: Date.now() };
+          setTripDistance(0);
+          setTripPath([first]);
+          void closeStaleTrips(user.id).catch(() => {});
+          void startTrip(user.id, first)
+            .then((trip) => {
+              tripIdRef.current = trip.id;
+              setTripId(trip.id);
+              setTripStartedAt(trip.startedAt);
+            })
+            .catch(() => {
+              setError("The trip could not be recorded, but live tracking stays on.");
+            });
+        }
         onPos(p);
         watchRef.current = navigator.geolocation.watchPosition(onPos, onErr, {
           enableHighAccuracy: true,
@@ -144,7 +201,7 @@ function Live() {
       onErr,
       { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 },
     );
-  }, [refreshServices]);
+  }, [refreshServices, recordSample, user, isStaff]);
 
   const stopTracking = useCallback(() => {
     if (watchRef.current != null) {
@@ -152,6 +209,13 @@ function Live() {
       watchRef.current = null;
     }
     setTracking(false);
+    const id = tripIdRef.current;
+    if (id) {
+      tripIdRef.current = null;
+      void endTrip(id, lastPosRef.current, tripDistanceRef.current).catch(() => {});
+      setTripId(null);
+      setTripStartedAt(null);
+    }
   }, []);
 
   useEffect(() => () => stopTracking(), [stopTracking]);
@@ -283,6 +347,15 @@ function Live() {
         >
           {tracking ? "● Live" : "○ Idle"}
         </span>
+        {tripId && tripStartedAt && (
+          <span
+            key={tick}
+            className="rounded-full bg-navy px-4 py-2 text-xs font-bold uppercase tracking-wider text-white"
+          >
+            ⦿ Recording trip · {formatDuration(tripStartedAt, null)} ·{" "}
+            {formatDistance(tripDistance)}
+          </span>
+        )}
       </div>
 
       {error && (
@@ -303,6 +376,7 @@ function Live() {
               lat: p.lat,
               lng: p.lng,
             }))}
+            {...(tripPath.length > 1 ? { path: tripPath } : {})}
             height={420}
           />
 

@@ -10,6 +10,7 @@ import {
   type ContactMessage,
 } from "@/lib/messages";
 
+import { WeatherPanel } from "@/components/WeatherPanel";
 import { DEFAULT_HOME, loadHomeContent, saveHomeContent, type HomeContent } from "@/lib/homepage";
 import { useSession } from "@/hooks/useSession";
 import {
