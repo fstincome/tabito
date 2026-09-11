@@ -347,6 +347,15 @@ function Live() {
         >
           {tracking ? "● Live" : "○ Idle"}
         </span>
+        {tripId && tripStartedAt && (
+          <span
+            key={tick}
+            className="rounded-full bg-navy px-4 py-2 text-xs font-bold uppercase tracking-wider text-white"
+          >
+            ⦿ Recording trip · {formatDuration(tripStartedAt, null)} ·{" "}
+            {formatDistance(tripDistance)}
+          </span>
+        )}
       </div>
 
       {error && (
