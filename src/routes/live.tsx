@@ -62,9 +62,20 @@ function Live() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
 
+  const [tripId, setTripId] = useState<string | null>(null);
+  const [tripStartedAt, setTripStartedAt] = useState<string | null>(null);
+  const [tripDistance, setTripDistance] = useState(0);
+  const [tripPath, setTripPath] = useState<LatLng[]>([]);
+  const [tick, setTick] = useState(0);
+
   const watchRef = useRef<number | null>(null);
   const lastFetchRef = useRef<LatLng | null>(null);
   const alertedRef = useRef<Record<string, number>>({});
+  const tripIdRef = useRef<string | null>(null);
+  const lastSampleRef = useRef<{ pos: LatLng; at: number } | null>(null);
+  const tripDistanceRef = useRef(0);
+  const lastPosRef = useRef<LatLng | null>(null);
+  const { user, isStaff } = useSession();
 
   useEffect(() => {
     void loadPoints().then(setPoints).catch(() => setPoints([]));
