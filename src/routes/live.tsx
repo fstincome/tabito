@@ -173,6 +173,24 @@ function Live() {
     navigator.geolocation.getCurrentPosition(
       (p) => {
         setTracking(true);
+        const first = { lat: p.coords.latitude, lng: p.coords.longitude };
+        if (user && isStaff && !tripIdRef.current) {
+          tripDistanceRef.current = 0;
+          lastPosRef.current = first;
+          lastSampleRef.current = { pos: first, at: Date.now() };
+          setTripDistance(0);
+          setTripPath([first]);
+          void closeStaleTrips(user.id).catch(() => {});
+          void startTrip(user.id, first)
+            .then((trip) => {
+              tripIdRef.current = trip.id;
+              setTripId(trip.id);
+              setTripStartedAt(trip.startedAt);
+            })
+            .catch(() => {
+              setError("The trip could not be recorded, but live tracking stays on.");
+            });
+        }
         onPos(p);
         watchRef.current = navigator.geolocation.watchPosition(onPos, onErr, {
           enableHighAccuracy: true,
@@ -183,7 +201,7 @@ function Live() {
       onErr,
       { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 },
     );
-  }, [refreshServices]);
+  }, [refreshServices, recordSample, user, isStaff]);
 
   const stopTracking = useCallback(() => {
     if (watchRef.current != null) {
@@ -191,6 +209,13 @@ function Live() {
       watchRef.current = null;
     }
     setTracking(false);
+    const id = tripIdRef.current;
+    if (id) {
+      tripIdRef.current = null;
+      void endTrip(id, lastPosRef.current, tripDistanceRef.current).catch(() => {});
+      setTripId(null);
+      setTripStartedAt(null);
+    }
   }, []);
 
   useEffect(() => () => stopTracking(), [stopTracking]);
