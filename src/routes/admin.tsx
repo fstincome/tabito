@@ -30,7 +30,7 @@ import {
   savePoint,
   signIn,
   signOut,
-  signUp,
+
   type AccessType,
   type AppRole,
   type Category,
