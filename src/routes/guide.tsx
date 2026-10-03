@@ -106,12 +106,7 @@ function Guide() {
         <div>
           {visible.length === 0 ? (
             <div className="surface p-10 text-center text-muted-foreground">
-              No points published in this category yet. An administrator can add them from
-              the{" "}
-              <Link to="/admin" className="font-semibold text-navy underline">
-                Admin desk
-              </Link>
-              .
+              No points published in this category yet. Check back soon.
             </div>
           ) : (
             <ul className="grid gap-5 sm:grid-cols-2">
