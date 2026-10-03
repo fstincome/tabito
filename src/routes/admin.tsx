@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { createStaffAccount } from "@/lib/staff.functions";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Home, Inbox, MapPinned, Tags, Users } from "lucide-react";
 import {
@@ -94,10 +96,10 @@ const LABEL =
 
 function Admin() {
   const { user, isAdmin, isStaff, loading } = useSession();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
-  const [fullName, setFullName] = useState("");
+  const createStaff = useServerFn(createStaffAccount);
+  const [newStaff, setNewStaff] = useState<{ fullName: string; email: string; password: string; role: AppRole }>({ fullName: "", email: "", password: "", role: "editor" });
   const [busy, setBusy] = useState(false);
 
   const [categories, setCategories] = useState<Category[]>([]);
@@ -308,11 +310,7 @@ function Admin() {
       setBusy(true);
       setErr(null);
       try {
-        if (mode === "signin") await signIn(email, pass);
-        else {
-          await signUp(email, pass, fullName);
-          flash("Account created. An admin must grant you access rights.");
-        }
+        await signIn(email, pass);
         setPass("");
       } catch (e) {
         fail(e);
@@ -330,26 +328,10 @@ function Admin() {
             void submit();
           }}
         >
-          <h1 className="font-display text-2xl font-bold text-navy">
-            {mode === "signin" ? "Staff sign in" : "Create a staff account"}
-          </h1>
+          <h1 className="font-display text-2xl font-bold text-navy">Staff sign in</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            TABITO travel staff accounts manage categories and publish tourist points.
+            TABITO travel staff accounts are created by an administrator.
           </p>
-
-          {mode === "signup" && (
-            <>
-              <label className="mt-5 block text-xs font-bold uppercase tracking-widest text-navy">
-                Full name
-              </label>
-              <input
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                placeholder="Jean Tabito"
-                className="mt-1 w-full rounded-lg border border-input bg-background px-4 py-2.5"
-              />
-            </>
-          )}
 
           <label className="mt-5 block text-xs font-bold uppercase tracking-widest text-navy">
             Email
@@ -367,7 +349,7 @@ function Admin() {
           </label>
           <input
             type="password"
-            autoComplete={mode === "signin" ? "current-password" : "new-password"}
+            autoComplete="current-password"
             value={pass}
             onChange={(e) => setPass(e.target.value)}
             placeholder="••••••••"
@@ -378,19 +360,7 @@ function Admin() {
             disabled={busy}
             className="mt-6 w-full rounded-full bg-navy px-5 py-3 font-semibold text-white disabled:opacity-60"
           >
-            {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setMode(mode === "signin" ? "signup" : "signin");
-              setErr(null);
-            }}
-            className="mt-3 w-full text-sm font-semibold text-navy underline"
-          >
-            {mode === "signin"
-              ? "New team member? Create an account"
-              : "Already have an account? Sign in"}
+            {busy ? "Please wait…" : "Sign in"}
           </button>
           {msg && <p className="mt-3 text-sm text-palm">{msg}</p>}
           {err && <p className="mt-3 text-sm text-destructive">{err}</p>}
@@ -1216,9 +1186,37 @@ function Admin() {
         <section className="surface mt-8 p-6">
           <h2 className="font-display text-xl font-bold text-navy">Team accounts</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            New colleagues create their account on this page, then you grant them editor
-            or admin rights here.
+            Create accounts for colleagues here, then adjust their editor or admin rights.
           </p>
+          <form
+            className="mt-4 grid gap-2 sm:grid-cols-5"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              try {
+                await createStaff({ data: newStaff });
+                setNewStaff({ fullName: "", email: "", password: "", role: "editor" });
+                setStaff(await loadStaff());
+                flash("Account created.");
+              } catch (e2) {
+                fail(e2);
+              }
+            }}
+          >
+            <input className={INPUT} placeholder="Full name" value={newStaff.fullName}
+              onChange={(e) => setNewStaff({ ...newStaff, fullName: e.target.value })} />
+            <input className={INPUT} type="email" required placeholder="Email" value={newStaff.email}
+              onChange={(e) => setNewStaff({ ...newStaff, email: e.target.value })} />
+            <input className={INPUT} type="text" required minLength={8} placeholder="Password (8+)" value={newStaff.password}
+              onChange={(e) => setNewStaff({ ...newStaff, password: e.target.value })} />
+            <select className={INPUT} value={newStaff.role}
+              onChange={(e) => setNewStaff({ ...newStaff, role: e.target.value as AppRole })}>
+              <option value="editor">Editor</option>
+              <option value="admin">Admin</option>
+            </select>
+            <button type="submit" className="mt-1 rounded-full bg-navy px-4 py-2.5 text-sm font-semibold text-white">
+              Create account
+            </button>
+          </form>
           <ul className="mt-4 space-y-2">
             {staff.map((m) => (
               <li
