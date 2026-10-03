@@ -1202,13 +1202,13 @@ function Admin() {
               }
             }}
           >
-            <input className={INPUT} placeholder="Full name" value={newStaff.fullName}
+            <input className={FIELD} placeholder="Full name" value={newStaff.fullName}
               onChange={(e) => setNewStaff({ ...newStaff, fullName: e.target.value })} />
-            <input className={INPUT} type="email" required placeholder="Email" value={newStaff.email}
+            <input className={FIELD} type="email" required placeholder="Email" value={newStaff.email}
               onChange={(e) => setNewStaff({ ...newStaff, email: e.target.value })} />
-            <input className={INPUT} type="text" required minLength={8} placeholder="Password (8+)" value={newStaff.password}
+            <input className={FIELD} type="text" required minLength={8} placeholder="Password (8+)" value={newStaff.password}
               onChange={(e) => setNewStaff({ ...newStaff, password: e.target.value })} />
-            <select className={INPUT} value={newStaff.role}
+            <select className={FIELD} value={newStaff.role}
               onChange={(e) => setNewStaff({ ...newStaff, role: e.target.value as AppRole })}>
               <option value="editor">Editor</option>
               <option value="admin">Admin</option>
