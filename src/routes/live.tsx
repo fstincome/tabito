@@ -339,6 +339,11 @@ function Live() {
     }
   }, [enriched, radius, position, notifPerm, vibrate]);
 
+  const markers = useMemo(
+    () => enriched.map((p) => ({ id: p.id, name: p.name, icon: p.icon, lat: p.lat, lng: p.lng })),
+    [enriched],
+  );
+
   const within = enriched.filter((p) => p.dist <= radius);
 
   return (
@@ -418,13 +423,7 @@ function Live() {
           <TabitoMap
             position={position}
             radius={radius}
-            markers={enriched.map((p) => ({
-              id: p.id,
-              name: p.name,
-              icon: p.icon,
-              lat: p.lat,
-              lng: p.lng,
-            }))}
+            markers={markers}
             {...(tripPath.length > 1 ? { path: tripPath } : {})}
             height={420}
           />
