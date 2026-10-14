@@ -45,8 +45,8 @@ function Guide() {
   const [shot, setShot] = useState(0);
 
   useEffect(() => {
-    void loadCategories().then(setCategories).catch(() => setCategories([]));
-    void loadPoints().then(setPoints).catch(() => setPoints([]));
+    void loadCategories().then(setCategories).catch(() => {});
+    void loadPoints().then(setPoints).catch(() => {});
   }, []);
 
   const visible = useMemo(
