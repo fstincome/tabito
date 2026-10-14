@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { FALLBACK_CATEGORIES, FALLBACK_POINTS } from "@/lib/guide-fallback";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TabitoMap } from "@/components/TabitoMap";
 import { WeatherPanel } from "@/components/WeatherPanel";
@@ -68,8 +69,8 @@ function Live() {
   const [vibrate, setVibrate] = useState(false);
   const [services, setServices] = useState<LivePlace[]>([]);
   const [servicesLoading, setServicesLoading] = useState(false);
-  const [points, setPoints] = useState<TourPoint[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [points, setPoints] = useState<TourPoint[]>(FALLBACK_POINTS);
+  const [categories, setCategories] = useState<Category[]>(FALLBACK_CATEGORIES);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
 
   const [tripId, setTripId] = useState<string | null>(null);

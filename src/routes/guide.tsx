@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { FALLBACK_CATEGORIES, FALLBACK_POINTS } from "@/lib/guide-fallback";
 import { useEffect, useMemo, useState } from "react";
 import { TabitoMap } from "@/components/TabitoMap";
 import { WeatherPanel } from "@/components/WeatherPanel";
@@ -38,8 +39,8 @@ export const Route = createFileRoute("/guide")({
 function Guide() {
   const { cat } = Route.useSearch();
   const navigate = Route.useNavigate();
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [points, setPoints] = useState<TourPoint[]>([]);
+  const [categories, setCategories] = useState<Category[]>(FALLBACK_CATEGORIES);
+  const [points, setPoints] = useState<TourPoint[]>(FALLBACK_POINTS);
   const [open, setOpen] = useState<TourPoint | null>(null);
   const [shot, setShot] = useState(0);
 
