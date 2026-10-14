@@ -47,6 +47,16 @@ export const Route = createFileRoute("/live")({
 
 const ALERT_COOLDOWN_MS = 10 * 60 * 1000;
 const REFRESH_DISTANCE = 300;
+const CACHE_KEY = "tabito:live-cache:v1";
+
+function writeCache(patch: Record<string, unknown>) {
+  try {
+    const prev = JSON.parse(localStorage.getItem(CACHE_KEY) || "{}");
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ ...prev, ...patch }));
+  } catch {
+    /* storage full — ignore */
+  }
+}
 
 function Live() {
   const [position, setPosition] = useState<LatLng | null>(null);
@@ -78,8 +88,46 @@ function Live() {
   const { user, isStaff } = useSession();
 
   useEffect(() => {
-    void loadPoints().then(setPoints).catch(() => setPoints([]));
-    void loadCategories().then(setCategories).catch(() => setCategories([]));
+    // Show cached data instantly, then refresh in the background.
+    try {
+      const c = JSON.parse(localStorage.getItem(CACHE_KEY) || "null");
+      if (c) {
+        if (c.points) setPoints(c.points);
+        if (c.categories) setCategories(c.categories);
+        if (c.services) setServices(c.services);
+        if (c.position) {
+          setPosition(c.position);
+          lastFetchRef.current = c.position;
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+    void Promise.all([loadPoints(), loadCategories()])
+      .then(([p, c]) => {
+        setPoints(p);
+        setCategories(c);
+        writeCache({ points: p.map((x) => ({ ...x, images: x.images.slice(0, 1) })), categories: c });
+      })
+      .catch(() => {});
+    // If location is already allowed, grab a quick fix right away (no prompt).
+    void navigator.permissions
+      ?.query({ name: "geolocation" as PermissionName })
+      .then((st) => {
+        if (st.state !== "granted") return;
+        navigator.geolocation.getCurrentPosition(
+          (p) => {
+            const pos = { lat: p.coords.latitude, lng: p.coords.longitude };
+            setPosition(pos);
+            setAccuracy(p.coords.accuracy);
+            const last = lastFetchRef.current;
+            if (!last || distanceMeters(last, pos) > REFRESH_DISTANCE) void refreshServices(pos);
+          },
+          () => {},
+          { enableHighAccuracy: false, maximumAge: 120000, timeout: 8000 },
+        );
+      })
+      .catch(() => {});
     setHistory(loadHistory());
     if (typeof Notification !== "undefined") setNotifPerm(Notification.permission);
   }, []);
@@ -95,6 +143,7 @@ function Live() {
       const list = await fetchLiveServices(pos);
       setServices(list);
       lastFetchRef.current = pos;
+      writeCache({ services: list, position: pos });
       setError(null);
     } catch (err) {
       setError(
@@ -199,7 +248,7 @@ function Live() {
         });
       },
       onErr,
-      { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 },
+      { enableHighAccuracy: false, maximumAge: 60000, timeout: 10000 },
     );
   }, [refreshServices, recordSample, user, isStaff]);
 
