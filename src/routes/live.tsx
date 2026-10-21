@@ -69,6 +69,7 @@ function Live() {
   const [vibrate, setVibrate] = useState(false);
   const [services, setServices] = useState<LivePlace[]>([]);
   const [servicesLoading, setServicesLoading] = useState(false);
+  const [servicesNotice, setServicesNotice] = useState<string | null>(null);
   const [points, setPoints] = useState<TourPoint[]>(FALLBACK_POINTS);
   const [categories, setCategories] = useState<Category[]>(FALLBACK_CATEGORIES);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
@@ -81,6 +82,7 @@ function Live() {
 
   const watchRef = useRef<number | null>(null);
   const lastFetchRef = useRef<LatLng | null>(null);
+  const servicesRef = useRef<LivePlace[]>([]);
   const alertedRef = useRef<Record<string, number>>({});
   const tripIdRef = useRef<string | null>(null);
   const lastSampleRef = useRef<{ pos: LatLng; at: number } | null>(null);
@@ -95,7 +97,10 @@ function Live() {
       if (c) {
         if (c.points) setPoints(c.points);
         if (c.categories) setCategories(c.categories);
-        if (c.services) setServices(c.services);
+        if (c.services) {
+          setServices(c.services);
+          servicesRef.current = c.services;
+        }
         if (c.position) {
           setPosition(c.position);
           lastFetchRef.current = c.position;
@@ -143,28 +148,35 @@ function Live() {
     try {
       const list = await fetchLiveServices(pos);
       setServices(list);
+      servicesRef.current = list;
       lastFetchRef.current = pos;
       writeCache({ services: list, position: pos });
       setError(null);
-    } catch (err) {
-      setError(
-        `Tourist services could not be refreshed — ${
-          err instanceof Error ? err.message : "network error"
-        }. Tracking stays on; retrying shortly.`,
-      );
+      setServicesNotice(null);
+    } catch {
+      // Never show a technical error: while the list is still empty we show a
+      // friendly "still searching" note, and the retry loop keeps running.
+      // Once services are on screen (cached or fresh), failures stay silent.
+      if (servicesRef.current.length === 0) {
+        setServicesNotice(
+          "Still searching for nearby tourist services — the connection is slow. We keep retrying automatically.",
+        );
+      }
     } finally {
       setServicesLoading(false);
     }
   }, []);
 
-  // Keep the feed alive: retry every 45s while tracking, even after a failure.
+  // Keep the feed alive: retry while tracking — faster when the list is still
+  // empty (first load), then every 45s once services are on screen.
   useEffect(() => {
     if (!tracking || !position) return;
+    const tickMs = services.length === 0 ? 15000 : 45000;
     const id = setInterval(() => {
       void refreshServices(position);
-    }, 45000);
+    }, tickMs);
     return () => clearInterval(id);
-  }, [tracking, position, refreshServices]);
+  }, [tracking, position, services.length, refreshServices]);
 
 
 
@@ -416,6 +428,19 @@ function Live() {
       {error && (
         <div className="mt-4 rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
           {error}
+        </div>
+      )}
+
+      {servicesNotice && (
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-navy/20 bg-navy/5 p-4 text-sm text-navy">
+          <span>{servicesNotice}</span>
+          <button
+            type="button"
+            onClick={() => position && void refreshServices(position)}
+            className="rounded-full bg-navy px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-white"
+          >
+            Retry now
+          </button>
         </div>
       )}
 

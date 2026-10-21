@@ -376,11 +376,13 @@ export type LivePlace = {
   kind: string;
 };
 
-/** Overpass mirrors, tried in order — the main instance often returns 504 under load. */
+/** Overpass mirrors, raced in parallel — the main instance often returns 504 under load. */
 const OVERPASS_MIRRORS = [
-  "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
   "https://overpass.kumi.systems/api/interpreter",
   "https://overpass.private.coffee/api/interpreter",
+  "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+  "https://lz4.overpass-api.de/api/interpreter",
+  "https://overpass.nchc.org.tw/api/interpreter",
   "https://overpass-api.de/api/interpreter",
 ];
 
@@ -447,11 +449,16 @@ export async function fetchLiveServices(
 
   // Query every mirror at once and keep the first one that answers: a single
   // blocked or overloaded mirror can no longer break the live tracker.
+  // Round 1 uses a short timeout for speed; if every mirror fails, round 2
+  // gives them much longer before we declare the network unreachable.
   let json: OverpassJson | undefined;
-  try {
-    json = await Promise.any(OVERPASS_MIRRORS.map((url) => askMirror(url, q, 12000)));
-  } catch {
-    json = undefined;
+  for (const ms of [12000, 30000]) {
+    try {
+      json = await Promise.any(OVERPASS_MIRRORS.map((url) => askMirror(url, q, ms)));
+      break;
+    } catch {
+      json = undefined;
+    }
   }
 
   if (!json) {
