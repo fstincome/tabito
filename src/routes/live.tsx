@@ -431,6 +431,19 @@ function Live() {
         </div>
       )}
 
+      {servicesNotice && (
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-navy/20 bg-navy/5 p-4 text-sm text-navy">
+          <span>{servicesNotice}</span>
+          <button
+            type="button"
+            onClick={() => position && void refreshServices(position)}
+            className="rounded-full bg-navy px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-white"
+          >
+            Retry now
+          </button>
+        </div>
+      )}
+
       <div className="mt-8 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
         <div className="space-y-6">
           <TabitoMap
