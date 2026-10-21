@@ -69,6 +69,7 @@ function Live() {
   const [vibrate, setVibrate] = useState(false);
   const [services, setServices] = useState<LivePlace[]>([]);
   const [servicesLoading, setServicesLoading] = useState(false);
+  const [servicesNotice, setServicesNotice] = useState<string | null>(null);
   const [points, setPoints] = useState<TourPoint[]>(FALLBACK_POINTS);
   const [categories, setCategories] = useState<Category[]>(FALLBACK_CATEGORIES);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
