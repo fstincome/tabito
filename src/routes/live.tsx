@@ -147,28 +147,35 @@ function Live() {
     try {
       const list = await fetchLiveServices(pos);
       setServices(list);
+      servicesRef.current = list;
       lastFetchRef.current = pos;
       writeCache({ services: list, position: pos });
       setError(null);
     } catch (err) {
-      setError(
-        `Tourist services could not be refreshed — ${
-          err instanceof Error ? err.message : "network error"
-        }. Tracking stays on; retrying shortly.`,
-      );
+      // Only surface the error when there is literally nothing to show —
+      // cached services stay on screen and the retry loop keeps running.
+      if (servicesRef.current.length === 0) {
+        setError(
+          `Tourist services could not be refreshed — ${
+            err instanceof Error ? err.message : "network error"
+          }. Tracking stays on; retrying shortly.`,
+        );
+      }
     } finally {
       setServicesLoading(false);
     }
   }, []);
 
-  // Keep the feed alive: retry every 45s while tracking, even after a failure.
+  // Keep the feed alive: retry while tracking — faster when the list is still
+  // empty (first load), then every 45s once services are on screen.
   useEffect(() => {
     if (!tracking || !position) return;
+    const tickMs = services.length === 0 ? 15000 : 45000;
     const id = setInterval(() => {
       void refreshServices(position);
-    }, 45000);
+    }, tickMs);
     return () => clearInterval(id);
-  }, [tracking, position, refreshServices]);
+  }, [tracking, position, services.length, refreshServices]);
 
 
 
