@@ -81,6 +81,7 @@ function Live() {
 
   const watchRef = useRef<number | null>(null);
   const lastFetchRef = useRef<LatLng | null>(null);
+  const servicesRef = useRef<LivePlace[]>([]);
   const alertedRef = useRef<Record<string, number>>({});
   const tripIdRef = useRef<string | null>(null);
   const lastSampleRef = useRef<{ pos: LatLng; at: number } | null>(null);
@@ -95,7 +96,10 @@ function Live() {
       if (c) {
         if (c.points) setPoints(c.points);
         if (c.categories) setCategories(c.categories);
-        if (c.services) setServices(c.services);
+        if (c.services) {
+          setServices(c.services);
+          servicesRef.current = c.services;
+        }
         if (c.position) {
           setPosition(c.position);
           lastFetchRef.current = c.position;
