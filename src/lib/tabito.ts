@@ -449,11 +449,16 @@ export async function fetchLiveServices(
 
   // Query every mirror at once and keep the first one that answers: a single
   // blocked or overloaded mirror can no longer break the live tracker.
+  // Round 1 uses a short timeout for speed; if every mirror fails, round 2
+  // gives them much longer before we declare the network unreachable.
   let json: OverpassJson | undefined;
-  try {
-    json = await Promise.any(OVERPASS_MIRRORS.map((url) => askMirror(url, q, 12000)));
-  } catch {
-    json = undefined;
+  for (const ms of [10000, 25000]) {
+    try {
+      json = await Promise.any(OVERPASS_MIRRORS.map((url) => askMirror(url, q, ms)));
+      break;
+    } catch {
+      json = undefined;
+    }
   }
 
   if (!json) {
