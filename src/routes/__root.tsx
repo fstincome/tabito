@@ -153,8 +153,8 @@ function SiteHeader() {
             <span className="block font-display text-lg font-extrabold tracking-tight text-white">
               TABITO
             </span>
-            <span className="block text-[10px] uppercase tracking-[0.18em] text-lagoon">
-              e-Bridge International Tours
+            <span className="block text-[10px] uppercase leading-snug tracking-[0.12em] text-lagoon">
+              Tanganyika e-Bridge International Tours
             </span>
           </span>
         </Link>
