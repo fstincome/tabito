@@ -152,14 +152,14 @@ function Live() {
       lastFetchRef.current = pos;
       writeCache({ services: list, position: pos });
       setError(null);
-    } catch (err) {
-      // Only surface the error when there is literally nothing to show —
-      // cached services stay on screen and the retry loop keeps running.
+      setServicesNotice(null);
+    } catch {
+      // Never show a technical error: while the list is still empty we show a
+      // friendly "still searching" note, and the retry loop keeps running.
+      // Once services are on screen (cached or fresh), failures stay silent.
       if (servicesRef.current.length === 0) {
-        setError(
-          `Tourist services could not be refreshed — ${
-            err instanceof Error ? err.message : "network error"
-          }. Tracking stays on; retrying shortly.`,
+        setServicesNotice(
+          "Still searching for nearby tourist services — the connection is slow. We keep retrying automatically.",
         );
       }
     } finally {
