@@ -17,7 +17,7 @@ export type HomeContent = {
 };
 
 export const DEFAULT_HOME: HomeContent = {
-  badge: "Karibu · Welcome",
+  badge: "Karibu · Kaze · Welcome",
   titleLead: "A word of welcome from",
   titleHighlight: "TABITO travel",
   welcome:
