@@ -183,15 +183,37 @@ function SiteFooter() {
     <footer className="mt-20 sea-gradient text-white/80">
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
         <p className="font-display text-lg font-bold text-white">
-          TABITO — Tanganyika e-Bridge International Tours
+          TABITO travel — Tanganyika e-Bridge International Tours
         </p>
         <p className="mt-2 max-w-2xl text-sm">
           Your bridge between the great lake and the world. Tours, transfers, cultural
           discovery and live travel guidance.
         </p>
         <p className="mt-6 text-xs uppercase tracking-widest text-lagoon">
-          © {new Date().getFullYear()} TABITO · Maps © OpenStreetMap contributors
+          Maps © OpenStreetMap contributors
         </p>
+
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-5 text-xs text-white/60">
+          <p>
+            © {new Date().getFullYear()} TABITO travel — Tanganyika e-Bridge International
+            Tours. All rights reserved.
+          </p>
+          <p className="flex items-center gap-1.5">
+            Made with{" "}
+            <span role="img" aria-label="love">
+              ❤️
+            </span>{" "}
+            by{" "}
+            <a
+              href="https://www.sightnetwork.org/"
+              target="_blank"
+              rel="noreferrer"
+              className="cursor-pointer text-inherit no-underline hover:text-white"
+            >
+              SIGHT AFRICA
+            </a>
+          </p>
+        </div>
       </div>
     </footer>
   );
