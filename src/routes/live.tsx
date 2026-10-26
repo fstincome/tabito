@@ -533,15 +533,19 @@ function Live() {
             </p>
             <div className="mt-2 font-mono text-xs text-muted-foreground">
               {position ? (
-                <>
-                  <div>lat {position.lat.toFixed(5)}</div>
-                  <div>lng {position.lng.toFixed(5)}</div>
-                  {accuracy != null && <div>±{Math.round(accuracy)} m</div>}
-                </>
+                <div>±{accuracy != null ? Math.round(accuracy) : "—"} m</div>
               ) : (
                 <div>—</div>
               )}
             </div>
+            {position && (
+              <WeatherPanel
+                lat={position.lat}
+                lng={position.lng}
+                compact
+                className="mt-3"
+              />
+            )}
             {position && (
               <button
                 onClick={() => refreshServices(position)}
