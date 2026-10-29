@@ -49,6 +49,8 @@ export const Route = createFileRoute("/admin")({
           "TABITO travel administration desk: create categories, capture coordinates live or by hand, and publish tourist points with up to five photos and a description.",
       },
       { property: "og:title", content: "TABITO travel Admin Desk" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       {
         property: "og:description",
         content: "Manage the TABITO travel guide content: categories, points, photos.",

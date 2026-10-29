@@ -3,6 +3,7 @@ import { FALLBACK_CATEGORIES, FALLBACK_POINTS } from "@/lib/guide-fallback";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TabitoMap } from "@/components/TabitoMap";
 import { WeatherPanel } from "@/components/WeatherPanel";
+import { FavoriteButton } from "@/components/FavoriteButton";
 import { useSession } from "@/hooks/useSession";
 import {
   SAMPLE_M,
@@ -37,6 +38,8 @@ export const Route = createFileRoute("/live")({
           "Turn on GPS and let TABITO travel alert you when a listed site or a tourist service is within your chosen radius while you travel.",
       },
       { property: "og:title", content: "TABITO travel Live Tracker" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       {
         property: "og:description",
         content:
@@ -491,7 +494,7 @@ function Live() {
                       {p.icon}
                     </div>
                   )}
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="truncate font-semibold text-navy">{p.name}</p>
                     <p className="truncate text-xs uppercase tracking-wide text-muted-foreground">
                       {p.category}
@@ -500,6 +503,7 @@ function Live() {
                       {formatDistance(p.dist)}
                     </p>
                   </div>
+                  {points.some((point) => point.id === p.id) && <FavoriteButton id={p.id} name={p.name} />}
                 </li>
               ))}
               {enriched.length === 0 && (

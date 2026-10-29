@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
 import { FALLBACK_CATEGORIES, FALLBACK_POINTS } from "@/lib/guide-fallback";
 import { useEffect, useMemo, useState } from "react";
 import { TabitoMap } from "@/components/TabitoMap";
@@ -42,7 +42,7 @@ export const Route = createFileRoute("/guide")({
 });
 
 export function Guide({ favoritesOnly = false }: { favoritesOnly?: boolean }) {
-  const search = Route.useSearch({ strict: false });
+  const search = useSearch({ strict: false });
   const cat = favoritesOnly ? undefined : search.cat;
   const navigate = Route.useNavigate();
   const { ids } = useFavorites();
