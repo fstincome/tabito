@@ -137,6 +137,7 @@ const NAV = [
   { to: "/", label: "Welcome" },
   { to: "/guide", label: "Guide" },
   { to: "/live", label: "Live tracker" },
+  { to: "/favorites", label: "Favorites" },
 ] as const;
 
 function SiteHeader() {

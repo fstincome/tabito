@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as GuideRouteImport } from './routes/guide'
 import { Route as LiveRouteImport } from './routes/live'
 
@@ -22,6 +23,11 @@ const IndexRoute = IndexRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FavoritesRoute = FavoritesRouteImport.update({
+  id: '/favorites',
+  path: '/favorites',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GuideRoute = GuideRouteImport.update({
@@ -38,12 +44,14 @@ const LiveRoute = LiveRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/favorites': typeof FavoritesRoute
   '/guide': typeof GuideRoute
   '/live': typeof LiveRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/favorites': typeof FavoritesRoute
   '/guide': typeof GuideRoute
   '/live': typeof LiveRoute
 }
@@ -51,20 +59,22 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/favorites': typeof FavoritesRoute
   '/guide': typeof GuideRoute
   '/live': typeof LiveRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/guide' | '/live'
+  fullPaths: '/' | '/admin' | '/favorites' | '/guide' | '/live'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/guide' | '/live'
-  id: '__root__' | '/' | '/admin' | '/guide' | '/live'
+  to: '/' | '/admin' | '/favorites' | '/guide' | '/live'
+  id: '__root__' | '/' | '/admin' | '/favorites' | '/guide' | '/live'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  FavoritesRoute: typeof FavoritesRoute
   GuideRoute: typeof GuideRoute
   LiveRoute: typeof LiveRoute
 }
@@ -83,6 +93,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/favorites': {
+      id: '/favorites'
+      path: '/favorites'
+      fullPath: '/favorites'
+      preLoaderRoute: typeof FavoritesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/guide': {
@@ -105,6 +122,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  FavoritesRoute: FavoritesRoute,
   GuideRoute: GuideRoute,
   LiveRoute: LiveRoute,
 }

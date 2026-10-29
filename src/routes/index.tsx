@@ -16,6 +16,8 @@ export const Route = createFileRoute("/")({
           "Welcome to TABITO travel. Explore attractions, historical monuments, cultural centres, bus stations and flight ticket offices with a live GPS travel companion.",
       },
       { property: "og:title", content: "Welcome to TABITO travel" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       {
         property: "og:description",
         content:
