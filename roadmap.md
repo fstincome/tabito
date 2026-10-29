@@ -1,0 +1,2 @@
+- [x] Add visitor favorite toggles and a dedicated saved-sites list without login.
+- [ ] Verify persistence, removal, and navigation in the browser; run favorites tests.

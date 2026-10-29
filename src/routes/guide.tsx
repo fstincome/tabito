@@ -3,6 +3,9 @@ import { FALLBACK_CATEGORIES, FALLBACK_POINTS } from "@/lib/guide-fallback";
 import { useEffect, useMemo, useState } from "react";
 import { TabitoMap } from "@/components/TabitoMap";
 import { WeatherPanel } from "@/components/WeatherPanel";
+import { FavoriteButton } from "@/components/FavoriteButton";
+import { useFavorites } from "@/hooks/useFavorites";
+import { Button } from "@/components/ui/button";
 import {
   ACCESS_TYPES,
   loadCategories,
@@ -27,6 +30,8 @@ export const Route = createFileRoute("/guide")({
           "Browse the TABITO travel guide: tourist attractions, historical monuments, cultural centres, bus stations and flight ticket offices, each with photos and descriptions.",
       },
       { property: "og:title", content: "TABITO travel Guide — Places worth travelling for" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       {
         property: "og:description",
         content:
@@ -36,9 +41,11 @@ export const Route = createFileRoute("/guide")({
   }),
 });
 
-function Guide() {
-  const { cat } = Route.useSearch();
+export function Guide({ favoritesOnly = false }: { favoritesOnly?: boolean }) {
+  const search = Route.useSearch({ strict: false });
+  const cat = favoritesOnly ? undefined : search.cat;
   const navigate = Route.useNavigate();
+  const { ids } = useFavorites();
   const [categories, setCategories] = useState<Category[]>(FALLBACK_CATEGORIES);
   const [points, setPoints] = useState<TourPoint[]>(FALLBACK_POINTS);
   const [open, setOpen] = useState<TourPoint | null>(null);
@@ -50,8 +57,8 @@ function Guide() {
   }, []);
 
   const visible = useMemo(
-    () => (cat ? points.filter((p) => p.categoryId === cat) : points),
-    [points, cat],
+    () => points.filter((p) => (!cat || p.categoryId === cat) && (!favoritesOnly || ids.includes(p.id))),
+    [points, cat, favoritesOnly, ids],
   );
 
   const catById = useMemo(
@@ -64,13 +71,13 @@ function Guide() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
       <h1 className="font-display text-3xl font-extrabold text-navy sm:text-4xl">
-        The TABITO travel Guide
+        {favoritesOnly ? "My favorites" : "The TABITO travel Guide"}
       </h1>
       <p className="mt-2 max-w-2xl text-muted-foreground">
-        Places our guides recommend, with photos and what actually happens there.
+        {favoritesOnly ? `${visible.length} saved ${visible.length === 1 ? "site" : "sites"}` : "Places our guides recommend, with photos and what actually happens there."}
       </p>
 
-      <div className="mt-6 flex flex-wrap gap-2">
+      {!favoritesOnly && <div className="mt-6 flex flex-wrap gap-2">
         <button
           onClick={() => navigate({ search: {} })}
           className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
@@ -90,7 +97,7 @@ function Guide() {
             {c.icon} {c.name}
           </button>
         ))}
-      </div>
+      </div>}
 
       {liveCategory && (
         <div className="mt-6 rounded-xl border border-lagoon/50 bg-lagoon/15 p-4 text-sm">
@@ -107,7 +114,12 @@ function Guide() {
         <div>
           {visible.length === 0 ? (
             <div className="surface p-10 text-center text-muted-foreground">
-              No points published in this category yet. Check back soon.
+              {favoritesOnly ? (
+                <>
+                  <p>{ids.length ? "Your saved sites are not available right now." : "No favorite sites yet."}</p>
+                  <Button asChild className="mt-4"><Link to="/guide">Explore the guide</Link></Button>
+                </>
+              ) : "No points published in this category yet. Check back soon."}
             </div>
           ) : (
             <ul className="grid gap-5 sm:grid-cols-2">
@@ -144,6 +156,10 @@ function Guide() {
                       </p>
                     </div>
                   </button>
+                  <div className="flex items-center justify-between border-t border-border px-4 py-2">
+                    <span className="text-xs text-muted-foreground">{ids.includes(p.id) ? "Saved" : "Favorite"}</span>
+                    <FavoriteButton id={p.id} name={p.name} />
+                  </div>
                 </li>
               ))}
             </ul>
@@ -183,6 +199,7 @@ function Guide() {
                   <p className="text-sm text-muted-foreground">{open.address}</p>
                 )}
               </div>
+              <FavoriteButton id={open.id} name={open.name} />
               <button
                 onClick={() => setOpen(null)}
                 className="rounded-full bg-muted px-3 py-1.5 text-sm font-semibold"
